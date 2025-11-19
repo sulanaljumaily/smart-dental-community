@@ -310,8 +310,8 @@ export default function LabDashboard() {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/lab/orders">
+          <Link href="/lab/orders">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
                   <Package className="w-8 h-8 text-white" />
@@ -321,11 +321,11 @@ export default function LabDashboard() {
                   متابعة الطلبات والعمل
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
 
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/lab/delivery">
+          <Link href="/lab/delivery">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center mx-auto">
                   <Truck className="w-8 h-8 text-white" />
@@ -335,11 +335,11 @@ export default function LabDashboard() {
                   تتبع طاقم التوصيل
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
 
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/lab/gallery">
+          <Link href="/lab/gallery">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center mx-auto">
                   <ImageIcon className="w-8 h-8 text-white" />
@@ -349,11 +349,11 @@ export default function LabDashboard() {
                   عرض نماذج العمل
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
 
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/lab/analytics">
+          <Link href="/lab/analytics">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mx-auto">
                   <TrendingUp className="w-8 h-8 text-white" />
@@ -363,8 +363,8 @@ export default function LabDashboard() {
                   إحصائيات الأداء
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
         </div>
 
         {/* Recent Orders */}

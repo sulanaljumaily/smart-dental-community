@@ -276,8 +276,8 @@ export default function VendorDashboard() {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/vendor/products">
+          <Link href="/vendor/products">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
                   <Package className="w-8 h-8 text-white" />
@@ -287,11 +287,11 @@ export default function VendorDashboard() {
                   إضافة وتعديل المنتجات
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
 
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/vendor/orders">
+          <Link href="/vendor/orders">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center mx-auto">
                   <ShoppingCart className="w-8 h-8 text-white" />
@@ -301,11 +301,11 @@ export default function VendorDashboard() {
                   متابعة الطلبات والشحنات
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
 
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="/vendor/analytics">
+          <Link href="/vendor/analytics">
+            <Card className="bento-card hover:shadow-lg transition-all cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center mx-auto">
                   <BarChart3 className="w-8 h-8 text-white" />
@@ -315,8 +315,8 @@ export default function VendorDashboard() {
                   تحليل المبيعات والأداء
                 </p>
               </CardContent>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
         </div>
 
         {/* Recent Orders */}
