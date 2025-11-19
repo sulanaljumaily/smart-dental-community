@@ -1,0 +1,880 @@
+// Prisma Schema for Smart Dental Community Platform
+// قاعدة بيانات منصة المجتمع الطبي للأسنان
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =======================================
+// ENUMS - التعدادات
+// =======================================
+
+enum UserRole {
+  DENTIST        // طبيب أسنان
+  VENDOR         // مورد
+  LAB            // معمل أسنان
+  ADMIN          // إدارة المنصة
+  STAFF          // طاقم العيادة
+  PATIENT        // مريض (للاستخدام المستقبلي)
+}
+
+enum ClinicStaffRole {
+  OWNER          // مالك
+  DENTIST        // طبيب
+  ASSISTANT      // مساعد
+  RECEPTIONIST   // استقبال
+  NURSE          // ممرض
+}
+
+enum AppointmentStatus {
+  PENDING        // قيد الانتظار
+  CONFIRMED      // مؤكد
+  CANCELLED      // ملغى
+  COMPLETED      // مكتمل
+  NO_SHOW        // لم يحضر
+}
+
+enum TreatmentType {
+  FILLING              // حشوة
+  ROOT_CANAL          // علاج عصب
+  EXTRACTION          // خلع
+  CROWN               // تاج
+  BRIDGE              // جسر
+  IMPLANT             // زراعة
+  ORTHODONTICS        // تقويم
+  CLEANING            // تنظيف
+  WHITENING           // تبييض
+  DENTURE             // طقم أسنان
+}
+
+enum ToothCondition {
+  HEALTHY             // سليم
+  CAVITY              // تسوس
+  FILLED              // محشو
+  MISSING             // مفقود
+  CROWNED             // مُتوج
+  ROOT_CANAL_TREATED  // معالج عصب
+  EXTRACTED           // مخلوع
+  IMPLANT             // مزروع
+  DAMAGED             // تالف
+}
+
+enum SessionStatus {
+  SCHEDULED      // مجدول
+  IN_PROGRESS    // جاري
+  COMPLETED      // مكتمل
+  CANCELLED      // ملغى
+}
+
+enum LabOrderStatus {
+  PENDING        // قيد الانتظار
+  ACCEPTED       // مقبول
+  IN_PROGRESS    // جاري التحضير
+  READY          // جاهز
+  IN_TRANSIT     // في الطريق
+  DELIVERED      // تم التسليم
+  RETURNED       // معاد
+}
+
+enum PaymentStatus {
+  PAID           // مدفوع
+  UNPAID         // غير مدفوع
+  PARTIAL        // جزئي
+}
+
+enum TaskType {
+  GENERAL        // عام
+  INVENTORY      // مخزون
+  APPOINTMENT    // موعد
+  FOLLOW_UP      // متابعة
+  URGENT         // عاجل
+}
+
+enum TaskStatus {
+  PENDING        // قيد الانتظار
+  IN_PROGRESS    // جاري
+  COMPLETED      // مكتمل
+  POSTPONED      // مؤجل
+}
+
+enum SubscriptionTier {
+  FREE           // مجاني
+  BASIC          // أساسي
+  PROFESSIONAL   // احترافي
+  ENTERPRISE     // مؤسسي
+}
+
+enum MessageType {
+  DIRECT         // مباشر
+  GROUP          // مجموعة
+  SYSTEM         // نظام
+}
+
+enum NotificationType {
+  APPOINTMENT    // موعد
+  INVENTORY      // مخزون
+  ORDER          // طلبية
+  LAB_DELIVERY   // توصيل مختبر
+  TASK           // مهمة
+  MESSAGE        // رسالة
+  SYSTEM         // نظام
+}
+
+enum JobType {
+  FULL_TIME      // دوام كامل
+  PART_TIME      // دوام جزئي
+  CONTRACT       // عقد
+}
+
+enum JobStatus {
+  ACTIVE         // نشط
+  CLOSED         // مغلق
+  FILLED         // تم شغله
+}
+
+// =======================================
+// CORE MODELS - النماذج الأساسية
+// =======================================
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  phone         String?  @unique
+  password      String
+  name          String
+  avatar        String?
+  role          UserRole
+  isVerified    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  dentistProfile    DentistProfile?
+  vendorProfile     VendorProfile?
+  labProfile        LabProfile?
+
+  sentMessages      Message[]         @relation("SentMessages")
+  receivedMessages  Message[]         @relation("ReceivedMessages")
+  notifications     Notification[]
+  posts             Post[]
+  comments          Comment[]
+  jobs              Job[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model DentistProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  specialization    String?
+  licenseNumber     String?  @unique
+  yearsOfExperience Int?
+  bio               String?  @db.Text
+  address           String?
+  city              String?
+
+  subscriptionTier  SubscriptionTier @default(FREE)
+  subscriptionEndsAt DateTime?
+
+  aiCreditsUsed     Int      @default(0)
+  maxAiCredits      Int      @default(10)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  clinics           Clinic[]
+  staffRoles        ClinicStaff[]
+  createdTasks      Task[]           @relation("TaskCreator")
+  assignedTasks     Task[]           @relation("TaskAssignee")
+
+  @@index([userId])
+}
+
+model VendorProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName     String
+  licenseNumber   String?  @unique
+  address         String?
+  city            String?
+  description     String?  @db.Text
+  logo            String?
+
+  commissionRate  Float    @default(0.05) // نسبة المنصة
+
+  isApproved      Boolean  @default(false)
+  isSuspended     Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  products        Product[]
+  orders          Order[]
+
+  @@index([userId])
+}
+
+model LabProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  labName         String
+  licenseNumber   String?  @unique
+  address         String?
+  city            String?
+  description     String?  @db.Text
+  specializations String[] // أنواع الخدمات
+
+  isApproved      Boolean  @default(false)
+  isSuspended     Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  deliveryStaff   LabDeliveryStaff[]
+  orders          LabOrder[]
+  savedByClinic   SavedLab[]
+
+  @@index([userId])
+}
+
+// =======================================
+// CLINIC MANAGEMENT - إدارة العيادات
+// =======================================
+
+model Clinic {
+  id              String   @id @default(cuid())
+  name            String
+  address         String?
+  city            String?
+  phone           String?
+  email           String?
+
+  latitude        Float?
+  longitude       Float?
+  showOnMap       Boolean  @default(false)
+
+  workingHours    Json?    // {saturday: {open: "09:00", close: "17:00"}, ...}
+  bookingLink     String?  @unique
+
+  ownerId         String
+  owner           DentistProfile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  staff           ClinicStaff[]
+  patients        Patient[]
+  appointments    Appointment[]
+  treatments      Treatment[]
+  inventory       InventoryItem[]
+  assets          Asset[]
+  finances        Finance[]
+  labOrders       LabOrder[]
+  tasks           Task[]
+  savedLabs       SavedLab[]
+
+  @@index([ownerId])
+  @@index([bookingLink])
+}
+
+model ClinicStaff {
+  id          String          @id @default(cuid())
+  clinicId    String
+  clinic      Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  dentistId   String
+  dentist     DentistProfile  @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+
+  role        ClinicStaffRole
+  permissions Json?           // صلاحيات مخصصة
+
+  salary      Float?
+  joinedAt    DateTime        @default(now())
+  leftAt      DateTime?
+
+  isActive    Boolean         @default(true)
+
+  // Relations
+  appointments Appointment[]
+  treatmentPlans TreatmentPlan[]
+
+  @@unique([clinicId, dentistId])
+  @@index([clinicId])
+  @@index([dentistId])
+}
+
+// =======================================
+// PATIENT MANAGEMENT - إدارة المرضى
+// =======================================
+
+model Patient {
+  id              String   @id @default(cuid())
+  clinicId        String
+  clinic          Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  name            String
+  phone           String
+  email           String?
+  dateOfBirth     DateTime?
+  gender          String?
+  address         String?
+
+  medicalHistory  Json?    // التاريخ الطبي
+  allergies       String[] // الحساسيات
+
+  totalVisits     Int      @default(0)
+  lastVisit       DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  appointments    Appointment[]
+  treatmentPlans  TreatmentPlan[]
+  teeth           Tooth[]
+  documents       PatientDocument[]
+  finances        PatientFinance[]
+
+  @@index([clinicId])
+  @@index([phone])
+}
+
+model Tooth {
+  id              String         @id @default(cuid())
+  patientId       String
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  toothNumber     Int            // 1-32 (FDI system)
+  condition       ToothCondition
+  previousTreatment String?
+  notes           String?        @db.Text
+
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  treatmentPlans  TreatmentPlan[]
+
+  @@unique([patientId, toothNumber])
+  @@index([patientId])
+}
+
+model PatientDocument {
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  title       String
+  type        String   // X-Ray, Report, Image, etc.
+  fileUrl     String
+  description String?  @db.Text
+
+  uploadedAt  DateTime @default(now())
+
+  @@index([patientId])
+}
+
+// =======================================
+// APPOINTMENTS - الحجوزات
+// =======================================
+
+model Appointment {
+  id          String            @id @default(cuid())
+  clinicId    String
+  clinic      Clinic            @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  patientId   String
+  patient     Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  staffId     String?
+  staff       ClinicStaff?      @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  date        DateTime
+  duration    Int               @default(30) // minutes
+  type        String?           // نوع الموعد
+  status      AppointmentStatus @default(PENDING)
+  notes       String?           @db.Text
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([date])
+}
+
+// =======================================
+// TREATMENT PLANS - الخطط العلاجية
+// =======================================
+
+model Treatment {
+  id          String   @id @default(cuid())
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  name        String
+  type        TreatmentType
+  description String?  @db.Text
+  price       Float
+
+  defaultSessions Int  @default(1)
+  sessionDetails  Json? // تفاصيل الجلسات الافتراضية
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  treatmentPlans TreatmentPlan[]
+
+  @@index([clinicId])
+}
+
+model TreatmentPlan {
+  id            String        @id @default(cuid())
+  patientId     String
+  patient       Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  toothId       String?
+  tooth         Tooth?        @relation(fields: [toothId], references: [id], onDelete: SetNull)
+
+  treatmentId   String
+  treatment     Treatment     @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+
+  dentistId     String?
+  dentist       ClinicStaff?  @relation(fields: [dentistId], references: [id], onDelete: SetNull)
+
+  totalCost     Float
+  amountPaid    Float         @default(0)
+
+  progress      Int           @default(0) // 0-100%
+
+  notes         String?       @db.Text
+  details       Json?         // تفاصيل خاصة بالعلاج
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  sessions      TreatmentSession[]
+  labOrders     LabOrder[]
+
+  @@index([patientId])
+  @@index([treatmentId])
+}
+
+model TreatmentSession {
+  id              String         @id @default(cuid())
+  planId          String
+  plan            TreatmentPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  sessionNumber   Int
+  scheduledDate   DateTime?
+  completedDate   DateTime?
+  status          SessionStatus  @default(SCHEDULED)
+
+  notes           String?        @db.Text
+  details         Json?          // تفاصيل كل جلسة (طول الجذور، نوع الحشوة، إلخ)
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([planId])
+}
+
+// =======================================
+// LAB MANAGEMENT - إدارة المختبرات
+// =======================================
+
+model LabOrder {
+  id            String         @id @default(cuid())
+  clinicId      String
+  clinic        Clinic         @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  labId         String
+  lab           LabProfile     @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  planId        String?
+  plan          TreatmentPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  orderType     String         // نوع الطلب
+  description   String?        @db.Text
+  specifications Json?
+
+  status        LabOrderStatus @default(PENDING)
+  paymentStatus PaymentStatus  @default(UNPAID)
+
+  amount        Float
+
+  dueDate       DateTime
+  deliveredDate DateTime?
+
+  deliveryStaffId String?
+  deliveryStaff   LabDeliveryStaff? @relation(fields: [deliveryStaffId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([clinicId])
+  @@index([labId])
+  @@index([status])
+}
+
+model LabDeliveryStaff {
+  id          String   @id @default(cuid())
+  labId       String
+  lab         LabProfile @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  name        String
+  phone       String
+  isAvailable Boolean  @default(true)
+
+  latitude    Float?
+  longitude   Float?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orders      LabOrder[]
+
+  @@index([labId])
+}
+
+model SavedLab {
+  id          String     @id @default(cuid())
+  clinicId    String
+  clinic      Clinic     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  labId       String?
+  lab         LabProfile? @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  customName  String?    // للمختبرات غير المسجلة
+  customPhone String?
+  customAddress String?
+
+  isInPlatform Boolean   @default(false)
+
+  createdAt   DateTime   @default(now())
+
+  @@unique([clinicId, labId])
+  @@index([clinicId])
+}
+
+// =======================================
+// FINANCE - المالية
+// =======================================
+
+model Finance {
+  id          String        @id @default(cuid())
+  clinicId    String
+  clinic      Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  type        String        // Revenue, Expense
+  category    String        // Treatment, Inventory, Lab, Salary, etc.
+  amount      Float
+  description String?       @db.Text
+
+  date        DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+
+  @@index([clinicId])
+  @@index([type])
+  @@index([date])
+}
+
+model PatientFinance {
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  amount      Float
+  type        String   // Payment, Charge
+  description String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([patientId])
+}
+
+// =======================================
+// INVENTORY & ASSETS - المخزون والأصول
+// =======================================
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  clinicId    String
+  clinic      Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  name        String
+  category    String
+  quantity    Int
+  minQuantity Int      @default(10) // الحد الأدنى للتنبيه
+
+  unit        String?  // box, piece, etc.
+  expiryDate  DateTime?
+
+  cost        Float?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([clinicId])
+}
+
+model Asset {
+  id            String   @id @default(cuid())
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  name          String
+  type          String   // Equipment, Device
+  serialNumber  String?
+
+  purchaseDate  DateTime
+  warrantyEnds  DateTime?
+
+  cost          Float?
+  status        String   @default("Active") // Active, Maintenance, Retired
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clinicId])
+}
+
+// =======================================
+// TASKS & REMINDERS - المهام والتذكيرات
+// =======================================
+
+model Task {
+  id          String     @id @default(cuid())
+  clinicId    String
+  clinic      Clinic     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?    @db.Text
+  type        TaskType
+  status      TaskStatus @default(PENDING)
+  priority    String     @default("Medium") // Low, Medium, High
+
+  createdById String
+  createdBy   DentistProfile @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  assignedToId String?
+  assignedTo   DentistProfile? @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  dueDate     DateTime?
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([clinicId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+// =======================================
+// MARKETPLACE - المتجر
+// =======================================
+
+model Product {
+  id          String        @id @default(cuid())
+  vendorId    String
+  vendor      VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?       @db.Text
+  category    String
+  brand       String?
+
+  price       Float
+  salePrice   Float?
+
+  images      String[]
+  stock       Int           @default(0)
+
+  isActive    Boolean       @default(true)
+  isFeatured  Boolean       @default(false)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  orderItems  OrderItem[]
+
+  @@index([vendorId])
+  @@index([category])
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  vendorId      String
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  buyerId       String        // يمكن أن يكون طبيب أو معمل
+  buyerType     String        // Dentist, Lab
+
+  status        String        @default("Pending") // Pending, Processing, Shipped, Delivered
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  subtotal      Float
+  platformFee   Float
+  total         Float
+
+  shippingAddress Json?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  items         OrderItem[]
+
+  @@index([vendorId])
+  @@index([buyerId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  quantity  Int
+  price     Float
+
+  @@index([orderId])
+}
+
+// =======================================
+// COMMUNITY - المجتمع
+// =======================================
+
+model Post {
+  id          String   @id @default(cuid())
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content     String   @db.Text
+  images      String[]
+  attachments String[]
+
+  visibility  String   @default("Public") // Public, Elite, Friends
+
+  likes       Int      @default(0)
+  shares      Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  comments    Comment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content   String   @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+// =======================================
+// JOBS - الوظائف
+// =======================================
+
+model Job {
+  id          String    @id @default(cuid())
+  posterId    String
+  poster      User      @relation(fields: [posterId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String    @db.Text
+  type        JobType
+  status      JobStatus @default(ACTIVE)
+
+  city        String?
+  specialization String?
+
+  salary      Float?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([posterId])
+  @@index([status])
+  @@index([city])
+}
+
+// =======================================
+// MESSAGING & NOTIFICATIONS
+// =======================================
+
+model Message {
+  id          String      @id @default(cuid())
+  senderId    String
+  sender      User        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId  String
+  receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  content     String      @db.Text
+  type        MessageType @default(DIRECT)
+
+  isRead      Boolean     @default(false)
+
+  createdAt   DateTime    @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+
+  link      String?
+  data      Json?
+
+  isRead    Boolean          @default(false)
+
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
