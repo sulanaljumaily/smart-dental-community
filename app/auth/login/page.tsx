@@ -10,7 +10,9 @@ import {
   ShoppingCart,
   FlaskConical,
   Shield,
-  ArrowRight
+  ArrowRight,
+  Zap,
+  Sparkles
 } from "lucide-react"
 
 type UserType = "DENTIST" | "VENDOR" | "LAB" | "ADMIN" | null
@@ -61,45 +63,112 @@ export default function LoginPage() {
     console.log("Login:", { email, password, type: selectedType })
   }
 
+  const handleQuickDemo = () => {
+    // Quick demo login - redirect to dentist dashboard
+    console.log("Quick demo login")
+    // TODO: Implement demo login logic
+    window.location.href = "/dentist"
+  }
+
   if (!selectedType) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-5xl">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              مرحباً بك في المجتمع الذكي لطب الأسنان
+        <div className="w-full max-w-6xl">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-600 to-purple-700 text-white mb-6 shadow-2xl">
+              <Sparkles className="w-10 h-10" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              تسجيل الدخول
             </h1>
-            <p className="text-lg text-gray-600">
-              اختر نوع حسابك للمتابعة
+            <p className="text-lg text-gray-600 mb-2">
+              SMART مرحباً بك في
             </p>
           </div>
 
+          {/* Quick Demo Login Card */}
+          <Card className="bento-card bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 text-white border-none mb-8 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            <CardContent className="p-6 md:p-8 relative z-10">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <Zap className="w-10 h-10 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-right">
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center md:justify-start gap-2">
+                    <Sparkles className="w-6 h-6" />
+                    تسجيل دخول سريع
+                  </h3>
+                  <p className="text-white/90 text-base md:text-lg mb-1">
+                    استخدم هذا الخيار للدخول السريع للتجربة بدون إنشاء حساب
+                  </p>
+                  <p className="text-white/80 text-sm">
+                    <strong>نوع الحساب:</strong> طبيب أسنان
+                  </p>
+                  <p className="text-white/70 text-xs mt-1">
+                    سيتم استخدام حساب تجريبي بميزات كاملة للتجربة السريعة
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <Button
+                    size="lg"
+                    onClick={handleQuickDemo}
+                    className="bg-white text-emerald-700 hover:bg-white/90 shadow-xl text-lg px-8 py-6 h-auto font-bold"
+                  >
+                    <Zap className="w-5 h-5 ml-2" />
+                    دخول سريع للتجربة
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Divider */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t-2 border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-600 font-semibold">
+                أو اختر نوع حسابك
+              </span>
+            </div>
+          </div>
+
+          {/* User Type Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {userTypes.map((userType) => {
               const Icon = userType.icon
               return (
                 <Card
                   key={userType.type}
-                  className={`cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl border-2 border-transparent hover:border-primary/50 bg-gradient-to-br ${userType.color} text-white overflow-hidden group`}
+                  className={`bento-card cursor-pointer hover:scale-105 border-2 border-transparent hover:border-primary/50 bg-gradient-to-br ${userType.color} text-white overflow-hidden group relative`}
                   onClick={() => setSelectedType(userType.type)}
                 >
-                  <CardHeader className="relative">
-                    <div className="absolute top-4 left-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                      <Icon className="w-32 h-32" />
+                  <div className="absolute top-4 left-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Icon className="w-32 h-32" />
+                  </div>
+                  <CardHeader className="relative z-10">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
+                      <Icon className="w-8 h-8" />
                     </div>
-                    <Icon className="w-16 h-16 mb-4 relative z-10" />
-                    <CardTitle className="text-white text-2xl relative z-10">{userType.title}</CardTitle>
-                    <CardDescription className="text-white/90 text-lg relative z-10">
+                    <CardTitle className="text-white text-2xl">{userType.title}</CardTitle>
+                    <CardDescription className="text-white/90 text-lg">
                       {userType.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="relative z-10">
                     <Button
                       variant="secondary"
-                      className="w-full group-hover:bg-white group-hover:text-gray-900"
+                      className="w-full group-hover:bg-white group-hover:text-gray-900 font-bold"
+                      size="lg"
                     >
-                      تسجيل الدخول
-                      <ArrowRight className="mr-2 h-4 w-4" />
+                      تسجيل دخول عادي
+                      <ArrowRight className="mr-2 h-5 w-5" />
                     </Button>
                   </CardContent>
                 </Card>

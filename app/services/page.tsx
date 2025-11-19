@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,10 @@ import {
   Search,
   Filter,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  Zap,
+  Home
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -146,93 +150,103 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50" dir="rtl">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-40 backdrop-blur-sm bg-white/90">
+      <header className="bg-white/80 border-b sticky top-0 z-40 backdrop-blur-md shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">الخدمات الطبية</h1>
-            <Button variant="outline" asChild>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold">الخدمات الطبية</h1>
+            </div>
+            <Button variant="outline" size="sm" asChild>
               <Link href="/">
-                العودة للرئيسية
+                <Home className="w-4 h-4 ml-2" />
+                الرئيسية
               </Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         {/* Hero Section */}
-        <Card className="bento-card bg-gradient-to-r from-blue-600 to-purple-700 text-white border-none">
-          <CardContent className="p-8 text-center space-y-4">
-            <div className="text-6xl">🦷</div>
-            <h2 className="text-3xl font-bold">ابحث عن أفضل عيادات الأسنان قريبة منك</h2>
-            <p className="text-lg text-white/90">احجز موعدك بسهولة بدون تسجيل</p>
-            <div className="flex gap-3 max-w-2xl mx-auto pt-4">
+        <Card className="bento-card bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white border-none mb-6 md:mb-8 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          <CardContent className="p-6 md:p-10 text-center space-y-4 md:space-y-6 relative z-10">
+            <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <Sparkles className="w-8 h-8 md:w-10 md:h-10" />
+            </div>
+            <h2 className="text-2xl md:text-4xl font-bold">ابحث عن أفضل عيادات الأسنان قريبة منك</h2>
+            <p className="text-base md:text-lg text-white/90 max-w-2xl mx-auto">
+              احجز موعدك بسهولة بدون تسجيل واحصل على رعاية طبية احترافية
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto pt-2 md:pt-4">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5" />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   placeholder="ابحث عن عيادة أو طبيب..."
-                  className="pr-10 h-12 text-foreground"
+                  className="pr-10 h-12 md:h-14 text-foreground"
                 />
               </div>
-              <Button size="lg" variant="secondary">
+              <Button size="lg" variant="secondary" className="h-12 md:h-14 font-bold">
+                <Search className="w-5 h-5 ml-2" />
                 بحث
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Service Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="#clinics">
-              <CardContent className="p-6 text-center space-y-2">
-                <div className="text-4xl mb-2">🗺️</div>
-                <h3 className="font-bold">العيادات القريبة</h3>
-                <p className="text-xs text-muted-foreground">على الخريطة</p>
-              </CardContent>
-            </Link>
-          </Card>
+        {/* Tabs for Services */}
+        <Tabs defaultValue="clinics" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-1 bg-white/80 backdrop-blur-sm mb-6">
+            <TabsTrigger
+              value="clinics"
+              className="flex items-center gap-2 py-3 text-sm md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+            >
+              <MapPin className="w-4 h-4" />
+              <span className="hidden sm:inline">عيادات قريبة</span>
+              <span className="sm:hidden">العيادات</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="diagnosis"
+              className="flex items-center gap-2 py-3 text-sm md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white"
+            >
+              <Brain className="w-4 h-4" />
+              <span className="hidden sm:inline">التشخيص الذكي</span>
+              <span className="sm:hidden">التشخيص</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="emergency"
+              className="flex items-center gap-2 py-3 text-sm md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+            >
+              <AlertCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">الطوارئ</span>
+              <span className="sm:hidden">طوارئ</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="articles"
+              className="flex items-center gap-2 py-3 text-sm md:text-base data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">المقالات</span>
+              <span className="sm:hidden">مقالات</span>
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="#diagnosis">
-              <CardContent className="p-6 text-center space-y-2">
-                <div className="text-4xl mb-2">🤖</div>
-                <h3 className="font-bold">تشخيص ذكي</h3>
-                <p className="text-xs text-muted-foreground">بالذكاء الاصطناعي</p>
-              </CardContent>
-            </Link>
-          </Card>
-
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="#emergency">
-              <CardContent className="p-6 text-center space-y-2">
-                <div className="text-4xl mb-2">🚨</div>
-                <h3 className="font-bold">الطوارئ</h3>
-                <p className="text-xs text-muted-foreground">إسعافات أولية</p>
-              </CardContent>
-            </Link>
-          </Card>
-
-          <Card className="bento-card hover:shadow-lg transition-all cursor-pointer" asChild>
-            <Link href="#articles">
-              <CardContent className="p-6 text-center space-y-2">
-                <div className="text-4xl mb-2">📰</div>
-                <h3 className="font-bold">مقالات طبية</h3>
-                <p className="text-xs text-muted-foreground">توعية صحية</p>
-              </CardContent>
-            </Link>
-          </Card>
-        </div>
-
-        {/* Nearby Clinics Section */}
-        <section id="clinics">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">العيادات القريبة منك</h2>
-            <Button variant="ghost">
-              <Filter className="w-4 h-4 ml-2" />
-              فلتر
-            </Button>
-          </div>
+          {/* Clinics Tab */}
+          <TabsContent value="clinics" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                <MapPin className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+                العيادات القريبة منك
+              </h2>
+              <Button variant="outline" size="sm">
+                <Filter className="w-4 h-4 ml-2" />
+                فلتر
+              </Button>
+            </div>
 
           {/* Featured Clinics */}
           <div className="mb-4">
@@ -387,96 +401,187 @@ export default function ServicesPage() {
             ))}
           </div>
 
-          <div className="text-center mt-6">
-            <Button size="lg" variant="outline">
-              عرض جميع العيادات على الخريطة
-              <ExternalLink className="w-4 h-4 mr-2" />
-            </Button>
-          </div>
-        </section>
+            <div className="text-center mt-6">
+              <Button size="lg" variant="outline">
+                عرض جميع العيادات على الخريطة
+                <ExternalLink className="w-4 h-4 mr-2" />
+              </Button>
+            </div>
+          </TabsContent>
 
-        {/* Smart Diagnosis Section */}
-        <section id="diagnosis">
-          <Card className="bento-card bg-gradient-to-r from-purple-500 to-pink-600 text-white border-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <Brain className="w-8 h-8" />
-                التشخيص الذكي
-              </CardTitle>
-              <CardDescription className="text-white/90">
-                احصل على تشخيص أولي باستخدام الذكاء الاصطناعي
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-2">
-                <Button size="lg" variant="secondary">
-                  تشخيص بدون AI
-                </Button>
-                <Button size="lg" variant="secondary">
-                  <Brain className="w-5 h-5 ml-2" />
-                  تشخيص بالـ AI
-                </Button>
-              </div>
-              <p className="text-sm text-white/80 text-center">
-                سنقترح لك أفضل العيادات القريبة بناءً على التشخيص
-              </p>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Emergency Services */}
-        <section id="emergency">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <AlertCircle className="w-6 h-6 text-red-600" />
-            طوارئ الأسنان
-          </h2>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {emergencyServices.map(service => (
-              <Card key={service.id} className="bento-card hover:shadow-lg transition-all cursor-pointer">
-                <CardContent className="p-6 text-center space-y-3">
-                  <div className="text-5xl">{service.icon}</div>
-                  <h3 className="font-bold text-lg">{service.title}</h3>
-                  <p className="text-sm text-muted-foreground">{service.description}</p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    اقرأ المزيد
+          {/* Smart Diagnosis Tab */}
+          <TabsContent value="diagnosis" className="space-y-6">
+            <Card className="bento-card bg-gradient-to-br from-purple-500 via-fuchsia-600 to-pink-600 text-white border-none overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+              <CardHeader className="relative z-10">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
+                  <Brain className="w-8 h-8 md:w-10 md:h-10" />
+                </div>
+                <CardTitle className="text-white text-2xl md:text-3xl">التشخيص الذكي</CardTitle>
+                <CardDescription className="text-white/90 text-base md:text-lg">
+                  احصل على تشخيص أولي باستخدام الذكاء الاصطناعي وسنقترح لك أفضل العيادات
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 md:space-y-6 relative z-10">
+                <div className="grid gap-3 md:gap-4 md:grid-cols-2">
+                  <Button size="lg" variant="secondary" className="h-14 md:h-16 font-bold text-base">
+                    <Sparkles className="w-5 h-5 ml-2" />
+                    تشخيص تقليدي
                   </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+                  <Button size="lg" variant="secondary" className="h-14 md:h-16 font-bold text-base">
+                    <Brain className="w-5 h-5 ml-2" />
+                    تشخيص بالذكاء الاصطناعي
+                  </Button>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
+                  <h4 className="font-bold text-base md:text-lg mb-3">كيف يعمل التشخيص الذكي؟</h4>
+                  <ul className="space-y-2 text-sm md:text-base text-white/90">
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white mt-2 flex-shrink-0"></div>
+                      <span>أجب عن بعض الأسئلة حول الأعراض</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white mt-2 flex-shrink-0"></div>
+                      <span>سيقوم الذكاء الاصطناعي بتحليل إجاباتك</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white mt-2 flex-shrink-0"></div>
+                      <span>احصل على تشخيص أولي واقتراحات للعيادات المناسبة</span>
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Medical Articles */}
-        <section id="articles">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">مقالات طبية</h2>
-            <Button variant="ghost">عرض الكل</Button>
-          </div>
+          {/* Emergency Tab */}
+          <TabsContent value="emergency" className="space-y-6">
+            <div className="mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
+                <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-red-600" />
+                طوارئ الأسنان
+              </h2>
+              <p className="text-gray-600">إسعافات أولية وإرشادات سريعة للتعامل مع حالات الطوارئ</p>
+            </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {articles.map(article => (
-              <Card key={article.id} className="bento-card hover:shadow-lg transition-all cursor-pointer">
-                <CardHeader>
-                  <div className="text-6xl text-center mb-4">{article.image}</div>
-                  <CardTitle className="text-lg">{article.title}</CardTitle>
-                  <CardDescription>{article.excerpt}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline">
-                      <Clock className="w-3 h-3 ml-1" />
-                      {article.readTime}
-                    </Badge>
-                    <Button variant="ghost" size="sm">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+              {emergencyServices.map((service, index) => (
+                <Card key={service.id} className="bento-card hover:shadow-xl group overflow-hidden relative cursor-pointer">
+                  <div className={cn(
+                    "absolute -bottom-6 -right-6 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-500",
+                    index === 0 && "bg-red-300/20",
+                    index === 1 && "bg-orange-300/20",
+                    index === 2 && "bg-pink-300/20"
+                  )}></div>
+                  <CardContent className="p-6 text-center space-y-4 relative z-10">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg">
+                      {service.icon}
+                    </div>
+                    <h3 className="font-bold text-lg md:text-xl">{service.title}</h3>
+                    <p className="text-sm md:text-base text-muted-foreground">{service.description}</p>
+                    <Button variant="outline" size="sm" className="w-full font-semibold">
+                      <FileText className="w-4 h-4 ml-2" />
                       اقرأ المزيد
                     </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="bento-card bg-gradient-to-r from-red-500 to-orange-600 text-white border-none mt-6">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                      <AlertCircle className="w-8 h-8" />
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+                  <div className="flex-1 text-center md:text-right">
+                    <h3 className="text-xl md:text-2xl font-bold mb-2">هل تحتاج مساعدة فورية؟</h3>
+                    <p className="text-white/90 text-sm md:text-base">
+                      اتصل بأقرب عيادة طوارئ أو احجز موعد عاجل الآن
+                    </p>
+                  </div>
+                  <Button variant="secondary" size="lg" className="font-bold">
+                    <Phone className="w-5 h-5 ml-2" />
+                    اتصال سريع
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Articles Tab */}
+          <TabsContent value="articles" className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
+                  <FileText className="w-6 h-6 md:w-8 md:h-8 text-emerald-600" />
+                  مقالات طبية
+                </h2>
+                <p className="text-gray-600">تعلم المزيد عن صحة أسنانك</p>
+              </div>
+              <Button variant="outline" size="sm">
+                <ExternalLink className="w-4 h-4 ml-2" />
+                عرض الكل
+              </Button>
+            </div>
+
+            <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+              {articles.map((article, index) => (
+                <Card key={article.id} className="bento-card hover:shadow-xl group overflow-hidden relative cursor-pointer">
+                  <div className={cn(
+                    "absolute -bottom-6 -right-6 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-500",
+                    index === 0 && "bg-emerald-300/20",
+                    index === 1 && "bg-blue-300/20",
+                    index === 2 && "bg-purple-300/20"
+                  )}></div>
+                  <CardHeader className="relative z-10">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-5xl mb-4 shadow-lg">
+                      {article.image}
+                    </div>
+                    <CardTitle className="text-lg md:text-xl">{article.title}</CardTitle>
+                    <CardDescription className="text-sm md:text-base">{article.excerpt}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="font-semibold">
+                        <Clock className="w-3 h-3 ml-1" />
+                        {article.readTime}
+                      </Badge>
+                      <Button variant="ghost" size="sm">
+                        اقرأ المزيد
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="bento-card bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-none mt-6">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                      <FileText className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center md:text-right">
+                    <h3 className="text-xl md:text-2xl font-bold mb-2">هل تريد المزيد من المقالات؟</h3>
+                    <p className="text-white/90 text-sm md:text-base">
+                      اشترك في نشرتنا الإخبارية للحصول على آخر المقالات الطبية
+                    </p>
+                  </div>
+                  <Button variant="secondary" size="lg" className="font-bold">
+                    <Sparkles className="w-5 h-5 ml-2" />
+                    اشترك الآن
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Booking Dialog */}
