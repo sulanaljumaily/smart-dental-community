@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Stethoscope, Plus, Edit, DollarSign, Clock, BarChart3, Users } from "lucide-react"
+import { Stethoscope, Plus, Edit, DollarSign, Clock, BarChart3, Users, FlaskConical } from "lucide-react"
 import Link from "next/link"
 
 const TREATMENT_TYPES = [
