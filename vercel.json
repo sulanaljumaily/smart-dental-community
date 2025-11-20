@@ -1,18 +1,4 @@
 {
-  "buildCommand": "prisma generate && next build",
-  "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url",
-    "OPENAI_API_KEY": "@openai_api_key",
-    "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": "@google_maps_api_key",
-    "CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name",
-    "CLOUDINARY_API_KEY": "@cloudinary_api_key",
-    "CLOUDINARY_API_SECRET": "@cloudinary_api_secret",
-    "ZAINCASH_MERCHANT_ID": "@zaincash_merchant_id",
-    "ZAINCASH_SECRET": "@zaincash_secret"
-  }
+  "buildCommand": "prisma generate && next build"
 }
