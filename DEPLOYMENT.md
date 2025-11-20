@@ -23,12 +23,15 @@ vercel
 
 ### 2. إعداد متغيرات البيئة (Environment Variables)
 
-في لوحة تحكم Vercel، انتقل إلى Settings > Environment Variables وأضف المتغيرات التالية:
+**مهم جداً**: يجب إضافة جميع المتغيرات التالية في لوحة تحكم Vercel قبل النشر.
 
-#### قاعدة البيانات
+في لوحة تحكم Vercel، انتقل إلى **Settings → Environment Variables** وأضف المتغيرات التالية لجميع البيئات (Production, Preview, Development):
+
+#### قاعدة البيانات (إلزامي)
 ```
 DATABASE_URL=postgresql://user:password@host:5432/database
 ```
+⚠️ **تحذير**: بدون DATABASE_URL، سيفشل البناء عند تنفيذ `prisma generate`
 
 #### المصادقة
 ```
@@ -83,6 +86,32 @@ npx prisma generate
    - 100 GB Bandwidth
    - 100 GB-Hrs Serverless Function Execution
    - Unlimited Deployments
+
+## كيفية الحصول على قاعدة البيانات
+
+تحتاج لإعداد قاعدة بيانات PostgreSQL. خيارات مجانية:
+
+### 1. Supabase (موصى به - أسهل)
+1. اذهب إلى [supabase.com](https://supabase.com) وسجل دخول
+2. Create New Project
+3. انتظر حتى يكتمل الإعداد
+4. Settings → Database → Connection String → URI
+5. انسخ الرابط وأضفه كـ `DATABASE_URL` في Vercel
+
+### 2. Neon (سريع ومجاني)
+1. اذهب إلى [neon.tech](https://neon.tech)
+2. Sign up → Create Project
+3. انسخ Connection String
+4. أضفه كـ `DATABASE_URL` في Vercel
+
+### 3. Vercel Postgres (متكامل)
+1. في مشروعك على Vercel
+2. Storage → Create Database → Postgres
+3. سيتم إضافة `DATABASE_URL` تلقائياً لمشروعك
+
+⚠️ **مهم جداً**:
+- بعد إضافة `DATABASE_URL` في Vercel، اضغط Redeploy
+- بدون قاعدة البيانات، سيفشل البناء عند `prisma generate`
 
 ## استكشاف الأخطاء
 
