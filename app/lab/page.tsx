@@ -35,7 +35,6 @@ import {
   Activity,
 } from "lucide-react"
 import Link from "next/link"
-import { MobileNav } from "@/components/shared/mobile-nav"
 
 export default function LabDashboard() {
   const [showOrderDialog, setShowOrderDialog] = useState(false)
@@ -226,31 +225,7 @@ export default function LabDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pb-20" dir="rtl">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-40 backdrop-blur-sm bg-white/90">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-                <FlaskConical className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">مركز المعامل</h1>
-                <p className="text-sm text-muted-foreground">مختبر الابتسامة المتقدم</p>
-              </div>
-            </div>
-            <Button variant="outline" asChild>
-              <Link href="/lab/profile">
-                <Edit className="w-4 h-4 ml-2" />
-                الملف الشخصي
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6" dir="rtl">
         {/* Stats Overview */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card className="bento-card">
@@ -604,10 +579,6 @@ export default function LabDashboard() {
             </div>
           </CardContent>
         </Card>
-      </main>
-
-      {/* Mobile Navigation */}
-      <MobileNav userRole="LAB" isOwner={false} />
     </div>
   )
 }
