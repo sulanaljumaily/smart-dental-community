@@ -14,7 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Stethoscope, Plus, Edit, DollarSign, Clock } from "lucide-react"
+import { Stethoscope, Plus, Edit, DollarSign, Clock, BarChart3, Users } from "lucide-react"
+import Link from "next/link"
 
 const TREATMENT_TYPES = [
   { value: "FILLING", label: "حشوة", icon: "🦷" },
@@ -29,7 +30,7 @@ const TREATMENT_TYPES = [
   { value: "DENTURE", label: "طقم أسنان", icon: "🦷" },
 ]
 
-export default function TreatmentsPage() {
+export default function TreatmentsPage({ params }: { params: { id: string } }) {
   const [showDialog, setShowDialog] = useState(false)
 
   const treatments = [
@@ -41,6 +42,9 @@ export default function TreatmentsPage() {
       defaultSessions: 1,
       description: "حشوة مركبة بلون الأسنان",
       isActive: true,
+      totalPatients: 245,
+      activeCases: 23,
+      totalRevenue: 36750000,
       sessionDetails: {
         session1: { name: "الحشوة", duration: 30 }
       }
@@ -53,6 +57,10 @@ export default function TreatmentsPage() {
       defaultSessions: 3,
       description: "علاج عصب كامل",
       isActive: true,
+      needsLab: false,
+      totalPatients: 156,
+      activeCases: 14,
+      totalRevenue: 109200000,
       sessionDetails: {
         session1: { name: "فتح وتنظيف", duration: 60, details: ["طول الجذور", "الملفات المستخدمة"] },
         session2: { name: "حشو مؤقت", duration: 45, details: ["الملفات", "المادة الحاشية"] },
@@ -68,6 +76,9 @@ export default function TreatmentsPage() {
       description: "تاج خزفي كامل",
       isActive: true,
       needsLab: true,
+      totalPatients: 89,
+      activeCases: 12,
+      totalRevenue: 106800000,
       sessionDetails: {
         session1: { name: "تحضير وطبعة", duration: 60, details: ["نوع التاج", "اللون"] },
         session2: { name: "التركيب", duration: 30 }
@@ -82,6 +93,9 @@ export default function TreatmentsPage() {
       description: "زراعة كاملة مع التاج",
       isActive: true,
       needsLab: true,
+      totalPatients: 34,
+      activeCases: 8,
+      totalRevenue: 85000000,
       sessionDetails: {
         session1: { name: "زراعة الجذر", duration: 90, details: ["نوع الزرعة", "القطر", "الطول"] },
         session2: { name: "فحص الالتئام", duration: 20, waitPeriod: "3-6 أشهر" },
@@ -96,6 +110,9 @@ export default function TreatmentsPage() {
       defaultSessions: 24,
       description: "تقويم معدني كامل",
       isActive: true,
+      totalPatients: 67,
+      activeCases: 45,
+      totalRevenue: 234500000,
       sessionDetails: {
         session1: { name: "التركيب الأولي", duration: 120 },
         recurring: { name: "جلسة شد", duration: 30, frequency: "شهرياً" }
@@ -186,41 +203,69 @@ export default function TreatmentsPage() {
           const typeInfo = TREATMENT_TYPES.find(t => t.value === treatment.type)
 
           return (
-            <Card key={treatment.id} className="bento-card hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl">
-                      {typeInfo?.icon}
+            <Link key={treatment.id} href={`/clinic/${params.id}/treatments/${treatment.id}`}>
+              <Card className="bento-card hover:shadow-xl transition-all cursor-pointer h-full">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl">
+                        {typeInfo?.icon}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{treatment.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{typeInfo?.label}</p>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{treatment.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{typeInfo?.label}</p>
-                    </div>
+                    <Badge variant={treatment.isActive ? "success" : "secondary"}>
+                      {treatment.isActive ? "نشط" : "غير نشط"}
+                    </Badge>
                   </div>
-                  <Badge variant={treatment.isActive ? "success" : "secondary"}>
-                    {treatment.isActive ? "نشط" : "غير نشط"}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">{treatment.description}</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{treatment.description}</p>
 
-                {/* Price & Sessions */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                    <p className="text-xs text-muted-foreground mb-1">السعر</p>
-                    <p className="text-lg font-bold text-green-700">
-                      {formatCurrency(treatment.price)}
-                    </p>
+                  {/* Statistics */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <Users className="w-3 h-3 text-blue-600" />
+                      </div>
+                      <p className="text-xl font-bold text-blue-700">{treatment.totalPatients}</p>
+                      <p className="text-xs text-muted-foreground">مريض</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <BarChart3 className="w-3 h-3 text-orange-600" />
+                      </div>
+                      <p className="text-xl font-bold text-orange-700">{treatment.activeCases}</p>
+                      <p className="text-xs text-muted-foreground">حالة نشطة</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <DollarSign className="w-3 h-3 text-purple-600" />
+                      </div>
+                      <p className="text-sm font-bold text-purple-700">
+                        {(treatment.totalRevenue / 1000000).toFixed(1)}م
+                      </p>
+                      <p className="text-xs text-muted-foreground">إيرادات</p>
+                    </div>
                   </div>
-                  <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                    <p className="text-xs text-muted-foreground mb-1">الجلسات</p>
-                    <p className="text-lg font-bold text-blue-700">
-                      {treatment.defaultSessions}
-                    </p>
+
+                  {/* Price & Sessions */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                      <p className="text-xs text-muted-foreground mb-1">السعر الافتراضي</p>
+                      <p className="text-lg font-bold text-green-700">
+                        {formatCurrency(treatment.price)}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <p className="text-xs text-muted-foreground mb-1">عدد الجلسات</p>
+                      <p className="text-lg font-bold text-blue-700">
+                        {treatment.defaultSessions}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
                 {/* Session Details */}
                 {treatment.sessionDetails && (
@@ -256,22 +301,34 @@ export default function TreatmentsPage() {
 
                 {treatment.needsLab && (
                   <Badge variant="info" className="w-full justify-center">
+                    <FlaskConical className="w-3 h-3 ml-1" />
                     يتطلب طلب مختبر
                   </Badge>
                 )}
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      // Handle edit
+                    }}
+                  >
                     <Edit className="w-4 h-4 ml-1" />
                     تعديل
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    {treatment.isActive ? "تعطيل" : "تفعيل"}
+                  <Button size="sm" className="flex-1">
+                    <BarChart3 className="w-4 h-4 ml-1" />
+                    الإحصائيات
                   </Button>
                 </div>
               </CardContent>
             </Card>
+            </Link>
           )
         })}
       </div>
