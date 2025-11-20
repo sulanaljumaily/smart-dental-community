@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { NotificationToast } from "@/components/shared/notification-toast";
+import { CartSidebar } from "@/components/shared/cart-sidebar";
+import { BookingDialog } from "@/components/shared/booking-dialog";
 
 export const metadata: Metadata = {
   title: "Smart Dental Community | المجتمع الذكي لطب الأسنان",
@@ -25,6 +27,8 @@ export default function RootLayout({
       <body className="font-arabic">
         {children}
         <NotificationToast />
+        <CartSidebar />
+        <BookingDialog />
       </body>
     </html>
   );
