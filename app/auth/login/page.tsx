@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuthStore, type UserRole } from "@/lib/stores/auth-store"
+import { useNotificationStore } from "@/lib/stores/notification-store"
 import {
   Stethoscope,
   ShoppingCart,
@@ -17,18 +20,36 @@ import {
   Phone,
   Mail,
   Lock,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  AlertCircle
 } from "lucide-react"
 import Link from "next/link"
 
 type LoginMode = "normal" | "quick"
-type UserRole = "DENTIST" | "CLINIC_STAFF" | "VENDOR" | "LAB" | "ADMIN" | null
+type UserRoleOrNull = UserRole | null
 
 export default function LoginPage() {
+  const router = useRouter()
+  const { login, quickDemo, isLoading, error, clearError, isAuthenticated, user } = useAuthStore()
+  const { addNotification } = useNotificationStore()
+
   const [loginMode, setLoginMode] = useState<LoginMode>("normal")
-  const [selectedRole, setSelectedRole] = useState<UserRole>(null)
+  const [selectedRole, setSelectedRole] = useState<UserRoleOrNull>(null)
   const [emailOrPhone, setEmailOrPhone] = useState("")
   const [password, setPassword] = useState("")
+
+  // إعادة التوجيه إذا كان المستخدم مسجل دخوله بالفعل
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      redirectToRolePage(user.role)
+    }
+  }, [isAuthenticated, user])
+
+  // مسح الأخطاء عند تغيير النمط أو الدور
+  useEffect(() => {
+    clearError()
+  }, [loginMode, selectedRole])
 
   const userRoles = [
     {
@@ -83,38 +104,57 @@ export default function LoginPage() {
     }
   ]
 
-  const handleNormalLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Normal Login:", { emailOrPhone, password, role: selectedRole })
-    // TODO: Implement authentication logic
-
-    // Redirect based on role
-    const roleRoutes = {
+  const redirectToRolePage = (role: UserRole) => {
+    const roleRoutes: Record<UserRole, string> = {
       DENTIST: "/dentist",
-      CLINIC_STAFF: "/clinic-staff",
+      CLINIC_STAFF: "/clinic/clinic-1", // افتراضياً نأخذ أول عيادة
       VENDOR: "/vendor",
       LAB: "/lab",
-      ADMIN: "/admin"
+      ADMIN: "/platform-admin",
+      PATIENT: "/services"
     }
 
-    if (selectedRole) {
-      window.location.href = roleRoutes[selectedRole]
+    router.push(roleRoutes[role])
+  }
+
+  const handleNormalLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!selectedRole) return
+
+    try {
+      await login(emailOrPhone, password, selectedRole)
+
+      // عرض إشعار نجاح
+      addNotification({
+        title: "تم تسجيل الدخول بنجاح",
+        message: `مرحباً بك في لوحة التحكم`,
+        type: "success"
+      })
+
+      // إعادة التوجيه
+      redirectToRolePage(selectedRole)
+    } catch (err) {
+      // الخطأ سيتم التعامل معه في المتجر
+      console.error("Login error:", err)
     }
   }
 
-  const handleQuickDemo = (role: UserRole) => {
-    console.log("Quick demo login for:", role)
+  const handleQuickDemo = async (role: UserRole) => {
+    try {
+      await quickDemo(role)
 
-    const roleRoutes = {
-      DENTIST: "/dentist",
-      CLINIC_STAFF: "/clinic-staff",
-      VENDOR: "/vendor",
-      LAB: "/lab",
-      ADMIN: "/admin"
-    }
+      // عرض إشعار نجاح
+      addNotification({
+        title: "تم الدخول التجريبي بنجاح",
+        message: `مرحباً بك في الوضع التجريبي`,
+        type: "success"
+      })
 
-    if (role) {
-      window.location.href = roleRoutes[role]
+      // إعادة التوجيه
+      redirectToRolePage(role)
+    } catch (err) {
+      console.error("Quick demo error:", err)
     }
   }
 
@@ -362,6 +402,19 @@ export default function LoginPage() {
 
           <CardContent>
             <form onSubmit={handleNormalLogin} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 rounded-lg bg-red-50 border-2 border-red-200 animate-in slide-in-from-top duration-300">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-bold text-red-900 mb-1">خطأ في تسجيل الدخول</h4>
+                      <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Email or Phone Input */}
               <div className="space-y-2">
                 <Label htmlFor="emailOrPhone" className="text-base font-semibold flex items-center gap-2">
@@ -376,7 +429,8 @@ export default function LoginPage() {
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
                     required
-                    className="text-right h-12 md:h-14 text-base pr-4 border-2 focus:border-primary"
+                    disabled={isLoading}
+                    className="text-right h-12 md:h-14 text-base pr-4 border-2 focus:border-primary disabled:opacity-50"
                   />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <Phone className="w-5 h-5" />
@@ -400,7 +454,8 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="text-right h-12 md:h-14 text-base border-2 focus:border-primary"
+                  disabled={isLoading}
+                  className="text-right h-12 md:h-14 text-base border-2 focus:border-primary disabled:opacity-50"
                   dir="ltr"
                 />
               </div>
@@ -415,11 +470,21 @@ export default function LoginPage() {
               {/* Login Button */}
               <Button
                 type="submit"
-                className={`w-full bg-gradient-to-r ${currentRole.gradient} hover:opacity-90 shadow-xl text-base md:text-lg font-bold`}
+                disabled={isLoading}
+                className={`w-full bg-gradient-to-r ${currentRole.gradient} hover:opacity-90 shadow-xl text-base md:text-lg font-bold disabled:opacity-50`}
                 size="lg"
               >
-                <CheckCircle2 className="ml-2 w-5 h-5" />
-                تسجيل الدخول
+                {isLoading ? (
+                  <>
+                    <Loader2 className="ml-2 w-5 h-5 animate-spin" />
+                    جاري تسجيل الدخول...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="ml-2 w-5 h-5" />
+                    تسجيل الدخول
+                  </>
+                )}
               </Button>
 
               {/* Divider */}
@@ -436,12 +501,22 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleQuickDemo(selectedRole)}
-                className="w-full border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-bold text-base md:text-lg h-12 md:h-14"
+                onClick={() => selectedRole && handleQuickDemo(selectedRole)}
+                disabled={isLoading || !selectedRole}
+                className="w-full border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-bold text-base md:text-lg h-12 md:h-14 disabled:opacity-50"
                 size="lg"
               >
-                <Zap className="ml-2 w-5 h-5" />
-                دخول تجريبي سريع
+                {isLoading ? (
+                  <>
+                    <Loader2 className="ml-2 w-5 h-5 animate-spin" />
+                    جاري الدخول...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="ml-2 w-5 h-5" />
+                    دخول تجريبي سريع
+                  </>
+                )}
               </Button>
 
               {/* Register Link */}

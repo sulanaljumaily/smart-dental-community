@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { NotificationToast } from "@/components/shared/notification-toast";
 
 export const metadata: Metadata = {
   title: "Smart Dental Community | المجتمع الذكي لطب الأسنان",
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className="font-arabic">
         {children}
+        <NotificationToast />
       </body>
     </html>
   );

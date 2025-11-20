@@ -7,6 +7,7 @@ import { StatCard } from "@/components/shared/stat-card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import {
   TrendingUp,
   TrendingDown,
@@ -305,8 +306,4 @@ export default function ClinicOverviewPage() {
       </Card>
     </div>
   )
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
 }
