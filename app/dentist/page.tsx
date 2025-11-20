@@ -17,6 +17,7 @@ import {
   DollarSign,
   UserCheck,
   AlertTriangle,
+  Package,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -76,6 +77,8 @@ export default function DentistOverviewPage() {
       text: "موعد جديد مع المريض أحمد علي",
       time: "منذ 5 دقائق",
       clinic: "عيادة النجوم",
+      staff: "د. أحمد محمد",
+      role: "طبيب أسنان",
     },
     {
       id: 2,
@@ -83,6 +86,8 @@ export default function DentistOverviewPage() {
       text: "تم إكمال علاج زراعة للمريضة سارة",
       time: "منذ 30 دقيقة",
       clinic: "مركز الابتسامة",
+      staff: "د. زينب خالد",
+      role: "جراحة الفم",
     },
     {
       id: 3,
@@ -90,13 +95,26 @@ export default function DentistOverviewPage() {
       text: "طلب مختبر جديد من معمل الدقة",
       time: "منذ ساعة",
       clinic: "عيادة النجوم",
+      staff: "د. أحمد محمد",
+      role: "طبيب أسنان",
     },
     {
       id: 4,
       type: "alert",
-      text: "تنبيه: نقص في مخزون القفازات",
+      text: "نقص في مخزون البنج",
       time: "منذ ساعتين",
       clinic: "عيادة النجوم",
+      staff: "فاطمة علي",
+      role: "مساعدة طبية",
+    },
+    {
+      id: 5,
+      type: "inventory",
+      text: "نقصان المخزون في القفازات",
+      time: "منذ 3 ساعات",
+      clinic: "مركز الابتسامة",
+      staff: "ليلى عباس",
+      role: "مساعدة طبية",
     },
   ]
 
@@ -107,6 +125,8 @@ export default function DentistOverviewPage() {
       priority: "high",
       dueDate: "اليوم",
       clinic: "عيادة النجوم",
+      assignedTo: "د. أحمد محمد",
+      role: "طبيب أسنان",
     },
     {
       id: 2,
@@ -114,6 +134,8 @@ export default function DentistOverviewPage() {
       priority: "high",
       dueDate: "اليوم",
       clinic: "عيادة النجوم",
+      assignedTo: "د. سلطان الجميلي",
+      role: "المالك",
     },
     {
       id: 3,
@@ -121,6 +143,17 @@ export default function DentistOverviewPage() {
       priority: "medium",
       dueDate: "غداً",
       clinic: "مركز الابتسامة",
+      assignedTo: "ليلى عباس",
+      role: "مساعدة طبية",
+    },
+    {
+      id: 4,
+      title: "تذكير بعلاج مريض - سن 14",
+      priority: "high",
+      dueDate: "اليوم",
+      clinic: "عيادة النجوم",
+      assignedTo: "د. أحمد محمد",
+      role: "طبيب تقويم",
     },
   ]
 
@@ -137,6 +170,7 @@ export default function DentistOverviewPage() {
       case "treatment": return CheckCircle2
       case "lab": return Activity
       case "alert": return AlertTriangle
+      case "inventory": return Package
       default: return Activity
     }
   }
@@ -147,6 +181,7 @@ export default function DentistOverviewPage() {
       case "treatment": return "text-green-500"
       case "lab": return "text-purple-500"
       case "alert": return "text-orange-500"
+      case "inventory": return "text-red-500"
       default: return "text-gray-500"
     }
   }
@@ -366,10 +401,19 @@ export default function DentistOverviewPage() {
                   </div>
                   <div className="flex-1 space-y-1">
                     <p className="text-sm font-medium">{activity.text}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span>{activity.time}</span>
                       <span>•</span>
-                      <span>{activity.clinic}</span>
+                      <span className="font-semibold text-blue-600">{activity.clinic}</span>
+                      {"staff" in activity && (
+                        <>
+                          <span>•</span>
+                          <span>{activity.staff}</span>
+                          <span className="text-xs bg-accent px-2 py-0.5 rounded">
+                            {activity.role}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -400,7 +444,7 @@ export default function DentistOverviewPage() {
                 <div className="w-5 h-5 rounded border-2 border-primary mt-0.5 flex-shrink-0"></div>
                 <div className="flex-1 space-y-1">
                   <p className="font-medium text-sm">{task.title}</p>
-                  <div className="flex items-center gap-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
                     <Badge
                       variant={task.priority === "high" ? "destructive" : "secondary"}
                       className="text-xs"
@@ -411,7 +455,17 @@ export default function DentistOverviewPage() {
                       <Clock className="w-3 h-3" />
                       {task.dueDate}
                     </span>
-                    <span className="text-muted-foreground">• {task.clinic}</span>
+                    <span className="text-muted-foreground">• </span>
+                    <span className="font-semibold text-blue-600">{task.clinic}</span>
+                    {"assignedTo" in task && (
+                      <>
+                        <span className="text-muted-foreground">• </span>
+                        <span>{task.assignedTo}</span>
+                        <span className="bg-accent px-2 py-0.5 rounded">
+                          {task.role}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -19,6 +19,10 @@ import {
   Building2,
   Users,
   User,
+  Store,
+  FlaskConical,
+  Shield,
+  UserPlus,
 } from "lucide-react"
 
 interface Message {
@@ -32,6 +36,8 @@ interface Message {
   isSent: boolean
 }
 
+type MessageCategory = "STAFF" | "VENDOR" | "LAB" | "ADMIN" | "COMMUNITY"
+
 interface Conversation {
   id: string
   participant: {
@@ -40,7 +46,8 @@ interface Conversation {
     avatar: string
     role: string
   }
-  clinic: {
+  category: MessageCategory
+  clinic?: {
     id: string
     name: string
   }
@@ -55,6 +62,7 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedConversation, setSelectedConversation] = useState<string | null>("1")
   const [messageInput, setMessageInput] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<MessageCategory | "ALL">("ALL")
 
   // بيانات تجريبية - سيتم استبدالها بـ API
   const conversations: Conversation[] = [
@@ -66,6 +74,7 @@ export default function MessagesPage() {
         avatar: "د.أ",
         role: "طبيب أسنان",
       },
+      category: "STAFF",
       clinic: {
         id: "1",
         name: "عيادة النجوم",
@@ -125,6 +134,7 @@ export default function MessagesPage() {
         avatar: "ف",
         role: "مساعدة طبية",
       },
+      category: "STAFF",
       clinic: {
         id: "1",
         name: "عيادة النجوم",
@@ -164,6 +174,7 @@ export default function MessagesPage() {
         avatar: "س",
         role: "موظفة استقبال",
       },
+      category: "STAFF",
       clinic: {
         id: "1",
         name: "عيادة النجوم",
@@ -203,6 +214,7 @@ export default function MessagesPage() {
         avatar: "د.ز",
         role: "جراحة الفم",
       },
+      category: "STAFF",
       clinic: {
         id: "2",
         name: "مركز الابتسامة",
@@ -244,14 +256,167 @@ export default function MessagesPage() {
         },
       ],
     },
+    {
+      id: "5",
+      participant: {
+        id: "6",
+        name: "شركة الرعاية الطبية",
+        avatar: "ش",
+        role: "مورد مستلزمات طبية",
+      },
+      category: "VENDOR",
+      lastMessage: "الشحنة جاهزة للتوصيل غداً",
+      lastMessageTime: "منذ ساعتين",
+      unreadCount: 1,
+      isOnline: true,
+      messages: [
+        {
+          id: "1",
+          senderId: "1",
+          senderName: "د. سلطان",
+          senderAvatar: "د.س",
+          content: "مرحباً، هل الطلب جاهز؟",
+          timestamp: "11:00 ص",
+          isRead: true,
+          isSent: true,
+        },
+        {
+          id: "2",
+          senderId: "6",
+          senderName: "شركة الرعاية",
+          senderAvatar: "ش",
+          content: "الشحنة جاهزة للتوصيل غداً",
+          timestamp: "11:30 ص",
+          isRead: false,
+          isSent: false,
+        },
+      ],
+    },
+    {
+      id: "6",
+      participant: {
+        id: "7",
+        name: "معمل الدقة لطب الأسنان",
+        avatar: "م",
+        role: "معمل أسنان",
+      },
+      category: "LAB",
+      clinic: {
+        id: "1",
+        name: "عيادة النجوم",
+      },
+      lastMessage: "التاج جاهز للتسليم",
+      lastMessageTime: "منذ 4 ساعات",
+      unreadCount: 0,
+      isOnline: false,
+      messages: [
+        {
+          id: "1",
+          senderId: "1",
+          senderName: "د. سلطان",
+          senderAvatar: "د.س",
+          content: "هل التاج للمريض أحمد جاهز؟",
+          timestamp: "9:00 ص",
+          isRead: true,
+          isSent: true,
+        },
+        {
+          id: "2",
+          senderId: "7",
+          senderName: "معمل الدقة",
+          senderAvatar: "م",
+          content: "التاج جاهز للتسليم",
+          timestamp: "9:30 ص",
+          isRead: true,
+          isSent: false,
+        },
+      ],
+    },
+    {
+      id: "7",
+      participant: {
+        id: "8",
+        name: "فريق الدعم الفني",
+        avatar: "د",
+        role: "إدارة المنصة",
+      },
+      category: "ADMIN",
+      lastMessage: "تم حل المشكلة بنجاح",
+      lastMessageTime: "أمس",
+      unreadCount: 0,
+      isOnline: true,
+      messages: [
+        {
+          id: "1",
+          senderId: "1",
+          senderName: "د. سلطان",
+          senderAvatar: "د.س",
+          content: "مرحباً، أواجه مشكلة في تحميل التقارير",
+          timestamp: "أمس 3:00 م",
+          isRead: true,
+          isSent: true,
+        },
+        {
+          id: "2",
+          senderId: "8",
+          senderName: "فريق الدعم",
+          senderAvatar: "د",
+          content: "تم حل المشكلة بنجاح",
+          timestamp: "أمس 3:45 م",
+          isRead: true,
+          isSent: false,
+        },
+      ],
+    },
+    {
+      id: "8",
+      participant: {
+        id: "9",
+        name: "د. محمد العبيدي",
+        avatar: "د.م",
+        role: "استشاري زراعة أسنان",
+      },
+      category: "COMMUNITY",
+      lastMessage: "نعم، لدي خبرة في هذا المجال",
+      lastMessageTime: "منذ 3 أيام",
+      unreadCount: 0,
+      isOnline: false,
+      messages: [
+        {
+          id: "1",
+          senderId: "1",
+          senderName: "د. سلطان",
+          senderAvatar: "د.س",
+          content: "مرحباً دكتور، هل لديك خبرة في زراعة الأسنان الفورية؟",
+          timestamp: "منذ 3 أيام",
+          isRead: true,
+          isSent: true,
+        },
+        {
+          id: "2",
+          senderId: "9",
+          senderName: "د. محمد",
+          senderAvatar: "د.م",
+          content: "نعم، لدي خبرة في هذا المجال",
+          timestamp: "منذ 3 أيام",
+          isRead: true,
+          isSent: false,
+        },
+      ],
+    },
   ]
 
   // Filter conversations
-  const filteredConversations = conversations.filter(
-    (conv) =>
+  const filteredConversations = conversations.filter((conv) => {
+    const matchesSearch =
       conv.participant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.clinic.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+      (conv.clinic?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesCategory =
+      selectedCategory === "ALL" || conv.category === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
 
   // Get selected conversation
   const activeConversation = conversations.find((c) => c.id === selectedConversation)
@@ -333,7 +498,7 @@ export default function MessagesPage() {
           {/* Conversations List */}
           <div className="border-l lg:col-span-1 flex flex-col">
             {/* Search */}
-            <div className="p-4 border-b">
+            <div className="p-4 border-b space-y-3">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -342,6 +507,63 @@ export default function MessagesPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pr-10"
                 />
+              </div>
+
+              {/* Category Filter */}
+              <div className="flex gap-1 overflow-x-auto pb-1">
+                <Button
+                  variant={selectedCategory === "ALL" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("ALL")}
+                  className="text-xs whitespace-nowrap"
+                >
+                  الكل
+                </Button>
+                <Button
+                  variant={selectedCategory === "STAFF" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("STAFF")}
+                  className="text-xs whitespace-nowrap gap-1"
+                >
+                  <Users className="w-3 h-3" />
+                  الطاقم
+                </Button>
+                <Button
+                  variant={selectedCategory === "VENDOR" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("VENDOR")}
+                  className="text-xs whitespace-nowrap gap-1"
+                >
+                  <Store className="w-3 h-3" />
+                  الموردين
+                </Button>
+                <Button
+                  variant={selectedCategory === "LAB" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("LAB")}
+                  className="text-xs whitespace-nowrap gap-1"
+                >
+                  <FlaskConical className="w-3 h-3" />
+                  المختبر
+                </Button>
+                <Button
+                  variant={selectedCategory === "ADMIN" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("ADMIN")}
+                  className="text-xs whitespace-nowrap gap-1"
+                >
+                  <Shield className="w-3 h-3" />
+                  الإدارة
+                </Button>
+                <Button
+                  variant={selectedCategory === "COMMUNITY" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory("COMMUNITY")}
+                  className="text-xs whitespace-nowrap gap-1"
+                >
+                  <UserPlus className="w-3 h-3" />
+                  المجتمع
+                </Button>
               </div>
             </div>
 
@@ -387,10 +609,14 @@ export default function MessagesPage() {
                       </p>
 
                       <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Building2 className="w-3 h-3" />
-                          {conversation.clinic.name}
-                        </div>
+                        {conversation.clinic ? (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Building2 className="w-3 h-3" />
+                            {conversation.clinic.name}
+                          </div>
+                        ) : (
+                          <div></div>
+                        )}
                         {conversation.unreadCount > 0 && (
                           <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs">
                             {conversation.unreadCount}
@@ -430,11 +656,15 @@ export default function MessagesPage() {
                       <h3 className="font-semibold">{activeConversation.participant.name}</h3>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{activeConversation.participant.role}</span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3" />
-                          {activeConversation.clinic.name}
-                        </span>
+                        {activeConversation.clinic && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Building2 className="w-3 h-3" />
+                              {activeConversation.clinic.name}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -31,6 +31,58 @@ enum ClinicStaffRole {
   NURSE          // ممرض
 }
 
+enum Permission {
+  // صلاحيات المرضى
+  VIEW_PATIENTS
+  ADD_PATIENTS
+  EDIT_PATIENTS
+  DELETE_PATIENTS
+
+  // صلاحيات المواعيد
+  VIEW_APPOINTMENTS
+  ADD_APPOINTMENTS
+  EDIT_APPOINTMENTS
+  DELETE_APPOINTMENTS
+
+  // صلاحيات الخطط العلاجية
+  VIEW_TREATMENTS
+  ADD_TREATMENTS
+  EDIT_TREATMENTS
+  DELETE_TREATMENTS
+
+  // صلاحيات المالية
+  VIEW_FINANCES
+  ADD_FINANCES
+  EDIT_FINANCES
+  DELETE_FINANCES
+
+  // صلاحيات المخزون
+  VIEW_INVENTORY
+  ADD_INVENTORY
+  EDIT_INVENTORY
+  DELETE_INVENTORY
+
+  // صلاحيات المختبر
+  VIEW_LAB_ORDERS
+  ADD_LAB_ORDERS
+  EDIT_LAB_ORDERS
+  DELETE_LAB_ORDERS
+
+  // صلاحيات الطاقم
+  VIEW_STAFF
+  ADD_STAFF
+  EDIT_STAFF
+  DELETE_STAFF
+
+  // صلاحيات الإعدادات
+  VIEW_SETTINGS
+  EDIT_SETTINGS
+
+  // صلاحيات التقارير
+  VIEW_REPORTS
+  EXPORT_REPORTS
+}
+
 enum AppointmentStatus {
   PENDING        // قيد الانتظار
   CONFIRMED      // مؤكد
@@ -110,9 +162,12 @@ enum SubscriptionTier {
 }
 
 enum MessageType {
-  DIRECT         // مباشر
-  GROUP          // مجموعة
-  SYSTEM         // نظام
+  STAFF          // رسائل طاقم العيادة
+  VENDOR         // رسائل مع الموردين
+  LAB            // رسائل مع المختبر/معمل الأسنان
+  ADMIN          // رسائل مع إدارة المنصة
+  COMMUNITY      // رسائل مع الأصدقاء في المجتمع الطبي
+  SYSTEM         // رسائل النظام
 }
 
 enum NotificationType {
@@ -300,25 +355,34 @@ model ClinicStaff {
   clinicId    String
   clinic      Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
-  dentistId   String
-  dentist     DentistProfile  @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+  dentistId   String?
+  dentist     DentistProfile?  @relation(fields: [dentistId], references: [id], onDelete: Cascade)
+
+  // معلومات الحساب للطاقم
+  userId      String?         // ربط مع حساب User للمالك أو الطبيب
+  name        String          // اسم عضو الطاقم
+  email       String?         // البريد الإلكتروني
+  phone       String?         // رقم الهاتف
+  password    String?         // كلمة المرور الخاصة (hashed)
 
   role        ClinicStaffRole
-  permissions Json?           // صلاحيات مخصصة
+  specialty   String?         // التخصص
+  permissions Permission[]    // الصلاحيات المخصصة
 
   salary      Float?
   joinedAt    DateTime        @default(now())
   leftAt      DateTime?
 
   isActive    Boolean         @default(true)
+  lastLogin   DateTime?       // آخر تسجيل دخول
 
   // Relations
   appointments Appointment[]
   treatmentPlans TreatmentPlan[]
 
-  @@unique([clinicId, dentistId])
   @@index([clinicId])
   @@index([dentistId])
+  @@index([email])
 }
 
 // =======================================
@@ -681,6 +745,10 @@ model Task {
   assignedToId String?
   assignedTo   DentistProfile? @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
 
+  // معلومات إضافية للعرض
+  assignedToName String?  // اسم المكلف بالمهمة
+  assignedToRole String?  // دور المكلف بالمهمة
+
   dueDate     DateTime?
 
   createdAt   DateTime   @default(now())
@@ -848,7 +916,14 @@ model Message {
   receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 
   content     String      @db.Text
-  type        MessageType @default(DIRECT)
+  type        MessageType @default(STAFF)
+
+  // معلومات السياق
+  clinicId    String?     // العيادة المرتبطة بالرسالة
+  senderRole  String?     // دور المرسل
+  receiverRole String?    // دور المستقبل
+
+  attachments String[]    @default([])
 
   isRead      Boolean     @default(false)
 
@@ -856,6 +931,8 @@ model Message {
 
   @@index([senderId])
   @@index([receiverId])
+  @@index([clinicId])
+  @@index([type])
   @@index([createdAt])
 }
 
@@ -868,6 +945,12 @@ model Notification {
   title     String
   message   String           @db.Text
 
+  // معلومات السياق
+  clinicId  String?          // اسم العيادة المرتبطة
+  clinicName String?         // اسم العيادة
+  staffName String?          // اسم الطاقم المرتبط
+  staffRole String?          // دور الطاقم
+
   link      String?
   data      Json?
 
@@ -877,4 +960,6 @@ model Notification {
 
   @@index([userId])
   @@index([isRead])
+  @@index([clinicId])
+  @@index([type])
 }
