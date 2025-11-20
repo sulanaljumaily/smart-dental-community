@@ -1,9 +1,12 @@
 "use client"
 
+import { useParams } from "next/navigation"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { StatCard } from "@/components/shared/stat-card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   TrendingUp,
   TrendingDown,
@@ -13,10 +16,19 @@ import {
   Package,
   AlertCircle,
   Clock,
-  UserCheck
+  UserCheck,
+  FileText,
+  Briefcase,
+  UserCog,
+  Settings,
+  BarChart3,
+  ClipboardList,
+  ArrowRight,
 } from "lucide-react"
 
 export default function ClinicOverviewPage() {
+  const params = useParams()
+  const clinicId = params.id as string
   // بيانات تجريبية
   const stats = {
     revenue: {
@@ -65,11 +77,64 @@ export default function ClinicOverviewPage() {
     }).format(amount) + " د.ع"
   }
 
+  // Quick access sections
+  const quickAccess = [
+    { title: "المرضى", icon: Users, href: `/clinic/${clinicId}/patients`, color: "from-blue-500 to-blue-700", count: stats.patients.total },
+    { title: "المواعيد", icon: Calendar, href: `/clinic/${clinicId}/appointments`, color: "from-green-500 to-green-700", count: stats.appointments.today },
+    { title: "الخطط العلاجية", icon: ClipboardList, href: `/clinic/${clinicId}/treatment-plans`, color: "from-purple-500 to-purple-700" },
+    { title: "المالية", icon: DollarSign, href: `/clinic/${clinicId}/finance`, color: "from-orange-500 to-orange-700" },
+    { title: "المخزون", icon: Package, href: `/clinic/${clinicId}/assets`, color: "from-pink-500 to-pink-700" },
+    { title: "المختبر", icon: Briefcase, href: `/clinic/${clinicId}/lab`, color: "from-teal-500 to-teal-700" },
+    { title: "الطاقم", icon: UserCog, href: `/clinic/${clinicId}/staff`, color: "from-indigo-500 to-indigo-700" },
+    { title: "الإعدادات", icon: Settings, href: `/clinic/${clinicId}/settings`, color: "from-gray-500 to-gray-700" },
+  ]
+
   return (
     <div className="space-y-6">
+      {/* Quick Access Grid */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-bold">الوصول السريع</h2>
+        <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-4">
+          {quickAccess.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link key={item.href} href={item.href}>
+                <Card className="bento-card hover:shadow-xl transition-all cursor-pointer group">
+                  <CardContent className="p-6 text-center space-y-3">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg">{item.title}</h3>
+                      {item.count !== undefined && (
+                        <p className="text-sm text-muted-foreground">
+                          {item.count}
+                        </p>
+                      )}
+                    </div>
+                    <Button variant="ghost" size="sm" className="w-full group-hover:bg-accent">
+                      فتح
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
+        </div>
+      </section>
+
       {/* Financial Stats */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold">الإحصائيات المالية</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">الإحصائيات المالية</h2>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/clinic/${clinicId}/finance`}>
+              عرض التفاصيل
+              <ArrowRight className="w-4 h-4 mr-2" />
+            </Link>
+          </Button>
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="إيرادات اليوم"
