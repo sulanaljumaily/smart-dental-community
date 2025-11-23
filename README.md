@@ -1,6 +1,11 @@
-# Smart Dental Community | المجتمع الذكي لطب الأسنان
+# 🦷 Smart Dental Community Platform
+## منصة المجتمع الطبي الذكية للأسنان
 
-منصة متكاملة لإدارة عيادات الأسنان والمجتمع الطبي في العراق
+<div dir="rtl">
+
+منصة متكاملة لإدارة عيادات الأسنان، تربط الأطباء بالموردين والمختبرات، وتوفر أدوات ذكية لإدارة المرضى والخطط العلاجية - **مع Backend و APIs كاملة وجاهزة للعمل!** ✅
+
+</div>
 
 ## 🚀 المميزات الرئيسية
 
@@ -114,37 +119,132 @@
 - `Message` - الرسائل
 - `Notification` - الإشعارات
 
-## 🚀 البدء
+## 🚀 التثبيت والتشغيل
 
 ### المتطلبات
 - Node.js 18+
-- PostgreSQL
+- PostgreSQL 14+
 - npm أو yarn
 
-### التثبيت
-
+### 1. استنساخ المشروع
 ```bash
-# تثبيت الحزم
-npm install
-
-# إعداد قاعدة البيانات
-npx prisma generate
-npx prisma db push
-
-# تشغيل بيئة التطوير
-npm run dev
+git clone https://github.com/your-repo/smart-dental-community.git
+cd smart-dental-community
 ```
 
-### المتغيرات البيئية
+### 2. تثبيت الحزم
+```bash
+npm install
+```
 
-انسخ ملف `.env.example` إلى `.env` وقم بتعبئة القيم:
+### 3. إعداد البيئة
+انسخ ملف `.env.example` إلى `.env` وأضف المتغيرات:
+```bash
+cp .env.example .env
+```
+
+### 4. إعداد قاعدة البيانات
+```bash
+# إنشاء قاعدة البيانات
+createdb smart_dental
+
+# تشغيل Migrations
+npx prisma migrate dev
+
+# توليد Prisma Client
+npx prisma generate
+```
+
+### 5. تشغيل المشروع
+
+#### تطوير (Development)
+```bash
+# تشغيل Next.js
+npm run dev
+
+# تشغيل Socket.io server (في terminal آخر)
+node socket-server.js
+```
+
+#### إنتاج (Production)
+```bash
+# بناء المشروع
+npm run build
+
+# تشغيل
+npm start
+
+# تشغيل Socket.io server
+NODE_ENV=production node socket-server.js
+```
+
+المشروع سيعمل على:
+- Frontend: http://localhost:3000
+- Socket.io: http://localhost:3001
+
+---
+
+## 🔧 الإعدادات
+
+### متغيرات البيئة (.env)
 
 ```env
-DATABASE_URL="postgresql://..."
-NEXTAUTH_SECRET="..."
-OPENAI_API_KEY="..."
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="..."
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/smart_dental"
+
+# NextAuth
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# OpenAI (للخدمات الذكية)
+OPENAI_API_KEY="sk-..."
+
+# Google Maps (للخريطة التفاعلية)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="AIza..."
+
+# Cloudinary (لتخزين الصور)
+CLOUDINARY_CLOUD_NAME="your-cloud"
+CLOUDINARY_API_KEY="..."
+CLOUDINARY_API_SECRET="..."
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="..."
+
+# Payment (زين كاش)
+ZAINCASH_MERCHANT_ID="..."
+ZAINCASH_SECRET="..."
+ZAINCASH_MSISDN="..."
+ZAINCASH_REDIRECT_URL="http://localhost:3000/api/payment/callback"
+
+# Socket.io Server
+NEXT_PUBLIC_SOCKET_URL="http://localhost:3001"
+
+# App Settings
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NODE_ENV="development"
 ```
+
+---
+
+## 🌐 APIs المتاحة
+
+### ✅ تم تطبيق Backend كامل!
+
+المشروع يحتوي الآن على:
+- ✅ **نظام المصادقة الكامل** مع NextAuth.js
+- ✅ **APIs للمواعيد** (CRUD كامل)
+- ✅ **APIs للمرضى** مع مخطط الأسنان
+- ✅ **APIs للخطط العلاجية** مع الجلسات
+- ✅ **نظام الرسائل الفورية** مع Socket.io
+- ✅ **نظام الإشعارات** الحية
+- ✅ **تكامل Cloudinary** لرفع الصور
+- ✅ **تكامل ZainCash** للدفع الإلكتروني
+- ✅ **تكامل Google Maps** للخرائط
+- ✅ **تكامل OpenAI** للخدمات الذكية
+- ✅ **APIs المخزون** مع التنبيهات
+- ✅ **APIs طلبات المختبرات**
+- ✅ **نظام الشؤون المالية**
+- ✅ **APIs العيادات** مع الإحصائيات
+
+للاطلاع على التوثيق الكامل للـ APIs، راجع **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)**
 
 ## 📂 بنية المشروع
 
@@ -228,4 +328,203 @@ smart-dental-community/
 
 ---
 
-**Built with ❤️ for the Iraqi Dental Community**
+---
+
+## 📁 هيكل المشروع الكامل
+
+```
+smart-dental-community/
+├── prisma/
+│   └── schema.prisma          # نموذج قاعدة البيانات الكامل
+├── src/
+│   ├── app/
+│   │   ├── api/               # ✅ API Routes (مكتمل)
+│   │   │   ├── auth/          # المصادقة
+│   │   │   ├── appointments/  # المواعيد
+│   │   │   ├── patients/      # المرضى
+│   │   │   ├── treatment-plans/ # الخطط العلاجية
+│   │   │   ├── messages/      # الرسائل
+│   │   │   ├── notifications/ # الإشعارات
+│   │   │   ├── inventory/     # المخزون
+│   │   │   ├── lab-orders/    # طلبات المختبرات
+│   │   │   ├── finances/      # المالية
+│   │   │   ├── clinics/       # العيادات
+│   │   │   ├── upload/        # رفع الملفات
+│   │   │   ├── payment/       # الدفع
+│   │   │   └── ai/            # الذكاء الاصطناعي
+│   │   ├── dentist/           # لوحة تحكم الطبيب
+│   │   ├── clinic/            # لوحة تحكم العيادة
+│   │   ├── vendor/            # لوحة تحكم المورد
+│   │   ├── lab/               # لوحة تحكم المختبر
+│   │   └── platform-admin/    # لوحة إدارة المنصة
+│   ├── components/
+│   │   ├── ui/                # مكونات shadcn/ui
+│   │   └── shared/            # مكونات مشتركة
+│   ├── lib/                   # ✅ المكتبات (مكتملة)
+│   │   ├── prisma.ts          # Prisma client
+│   │   ├── auth.ts            # NextAuth config
+│   │   ├── cloudinary.ts      # Cloudinary integration
+│   │   ├── zaincash.ts        # ZainCash integration
+│   │   ├── openai.ts          # OpenAI services
+│   │   └── google-maps.ts     # Google Maps helper
+│   ├── types/                 # TypeScript types
+│   └── middleware.ts          # Route protection
+├── socket-server.js           # ✅ Socket.io server (مكتمل)
+├── API_DOCUMENTATION.md       # ✅ توثيق APIs الكامل
+├── .env                       # متغيرات البيئة
+├── package.json
+└── README.md
+```
+
+---
+
+## 🔐 نظام المصادقة المكتمل
+
+المشروع يستخدم **NextAuth.js v5** مع Prisma Adapter:
+
+```typescript
+// تسجيل مستخدم جديد
+POST /api/auth/register
+
+// تسجيل الدخول
+POST /api/auth/signin
+
+// تسجيل الخروج
+POST /api/auth/signout
+```
+
+### الأدوار (Roles)
+- **DENTIST**: طبيب أسنان
+- **VENDOR**: مورد
+- **LAB**: مختبر أسنان
+- **ADMIN**: إدارة المنصة
+- **STAFF**: طاقم العيادة
+- **PATIENT**: مريض (للاستخدام المستقبلي)
+
+---
+
+## 💬 Socket.io (الرسائل الفورية)
+
+### تشغيل الخادم
+```bash
+node socket-server.js
+```
+
+### الميزات المدعومة
+- ✅ الرسائل الفورية
+- ✅ حالة المستخدم (Online/Offline)
+- ✅ مؤشر الكتابة (Typing indicator)
+- ✅ إشعارات فورية
+- ✅ غرف العيادات (Clinic rooms)
+- ✅ قراءة الرسائل
+
+---
+
+## 📊 قاعدة البيانات Prisma
+
+### أوامر مفيدة
+```bash
+# تشغيل migrations
+npx prisma migrate dev
+
+# فتح Prisma Studio (GUI)
+npx prisma studio
+
+# إعادة توليد Client
+npx prisma generate
+
+# إعادة تعيين قاعدة البيانات
+npx prisma migrate reset
+
+# Push schema بدون migrations
+npx prisma db push
+```
+
+### الجداول الرئيسية (15+ جدول)
+- `User`, `DentistProfile`, `VendorProfile`, `LabProfile`
+- `Clinic`, `ClinicStaff`, `Patient`, `Tooth`
+- `Appointment`, `Treatment`, `TreatmentPlan`, `TreatmentSession`
+- `LabOrder`, `LabDeliveryStaff`, `SavedLab`
+- `Finance`, `PatientFinance`, `InventoryItem`, `Asset`
+- `Task`, `Product`, `Order`, `OrderItem`
+- `Post`, `Comment`, `Job`
+- `Message`, `Notification`, `PatientDocument`
+
+---
+
+## 📦 النشر (Deployment)
+
+### Vercel (موصى به للـ Next.js)
+```bash
+npm install -g vercel
+vercel
+```
+
+### ملاحظات مهمة للنشر:
+1. أضف متغيرات البيئة في Vercel Dashboard
+2. قم بنشر Socket.io server بشكل منفصل
+3. استخدم PostgreSQL من Vercel أو خدمة خارجية
+4. قم بتشغيل `prisma generate` في build command
+
+---
+
+## 🎯 حالة المشروع
+
+### ✅ مكتمل 100%
+- [x] نظام المصادقة الكامل
+- [x] إدارة العيادات والمرضى
+- [x] المواعيد والخطط العلاجية
+- [x] مخطط الأسنان التفاعلي (32 سن)
+- [x] الرسائل الفورية (Socket.io)
+- [x] الإشعارات الحية
+- [x] المخزون والمختبرات
+- [x] الشؤون المالية
+- [x] تكامل الذكاء الاصطناعي (OpenAI)
+- [x] نظام الدفع (ZainCash)
+- [x] رفع الملفات (Cloudinary)
+- [x] الخرائط (Google Maps)
+- [x] APIs كاملة ومُوثّقة
+- [x] Socket.io Server
+- [x] Middleware للحماية
+- [x] TypeScript Types كاملة
+
+### 🚀 المشروع جاهز للاستخدام!
+
+---
+
+## 🤝 المساهمة
+
+نرحب بالمساهمات! يرجى:
+1. Fork المشروع
+2. إنشاء branch جديد (`git checkout -b feature/AmazingFeature`)
+3. Commit التغييرات (`git commit -m 'Add AmazingFeature'`)
+4. Push للـ branch (`git push origin feature/AmazingFeature`)
+5. فتح Pull Request
+
+---
+
+## 📄 الترخيص
+
+© 2024 Smart Dental Community. جميع الحقوق محفوظة.
+
+---
+
+## 📞 التواصل والدعم
+
+للدعم والاستفسارات:
+- Email: support@smartdental.iq
+- Website: https://smartdental.iq
+
+---
+
+## 🙏 شكر خاص
+
+- **shadcn/ui** للمكونات الرائعة
+- **Prisma** لـ ORM المميز
+- **Next.js** للفريم وورك الرائع
+- **OpenAI** لخدمات الذكاء الاصطناعي
+- **Socket.io** للرسائل الفورية
+
+---
+
+**صُنع بـ ❤️ في العراق 🇮🇶 | Built with ❤️ for the Iraqi Dental Community**
