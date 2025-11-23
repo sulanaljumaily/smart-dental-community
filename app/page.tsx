@@ -1,295 +1,360 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
-  Users,
-  Stethoscope,
-  Building2,
-  FlaskConical,
-  ShoppingBag,
-  Calendar,
-  MessageSquare,
-  Briefcase,
   Sparkles,
-  Heart,
-  TrendingUp,
-  Award,
-  Shield,
   MapPin,
+  Star,
+  Clock,
+  ArrowRight,
+  Stethoscope,
+  FileText,
   Brain,
-  Zap,
-  Activity
+  AlertCircle,
+  Heart,
+  Calendar,
+  Phone,
+  Navigation
 } from "lucide-react";
 import Link from "next/link";
 
-export default function Home() {
+export default function PatientHomePage() {
+  // بيانات تجريبية للعيادات القريبة
+  const nearbyClinic = [
+    {
+      id: "1",
+      name: "عيادة النجوم لطب الأسنان",
+      address: "بغداد - الكرادة",
+      distance: "500 م",
+      rating: 4.8,
+      reviews: 234,
+      isOpen: true,
+      image: "🏥"
+    },
+    {
+      id: "2",
+      name: "مركز الابتسامة الطبي",
+      address: "بغداد - المنصور",
+      distance: "1.2 كم",
+      rating: 4.7,
+      reviews: 189,
+      isOpen: true,
+      image: "😁"
+    },
+    {
+      id: "3",
+      name: "عيادة الأمل التخصصية",
+      address: "بغداد - الجادرية",
+      distance: "2.5 كم",
+      rating: 4.6,
+      reviews: 156,
+      isOpen: false,
+      image: "🦷"
+    }
+  ];
+
+  // بيانات تجريبية للمقالات
+  const articles = [
+    {
+      id: "1",
+      title: "العناية اليومية بالأسنان",
+      excerpt: "نصائح مهمة للحفاظ على صحة أسنانك",
+      image: "🪥",
+      readTime: "5 دقائق"
+    },
+    {
+      id: "2",
+      title: "متى تحتاج لزيارة طبيب الأسنان؟",
+      excerpt: "علامات تستدعي الزيارة الفورية",
+      image: "⚕️",
+      readTime: "4 دقائق"
+    },
+    {
+      id: "3",
+      title: "تبييض الأسنان: الحقيقة والخرافة",
+      excerpt: "كل ما تحتاج معرفته عن تبييض الأسنان",
+      image: "✨",
+      readTime: "6 دقائق"
+    }
+  ];
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50" dir="rtl">
-      {/* Hero Section */}
-      <section className="pt-12 md:pt-20 pb-8 md:pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Logo/Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-2xl">
-              <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-white" />
-            </div>
-          </div>
+      {/* Header - شريط علوي */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo / الشعار */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg md:text-xl font-bold bg-gradient-to-l from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  المجتمع الذكي
+                </h1>
+                <p className="text-xs text-gray-600">لطب الأسنان</p>
+              </div>
+            </Link>
 
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
-              المجتمع الذكي لطب الأسنان
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto">
-              منصة متكاملة تجمع أطباء الأسنان والموردين ومعامل الأسنان في العراق
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-base md:text-lg px-6 md:px-8 h-12 md:h-14 font-bold shadow-lg" asChild>
-                <Link href="/auth/login">
-                  <Zap className="w-5 h-5 ml-2" />
-                  تسجيل الدخول
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-base md:text-lg px-6 md:px-8 h-12 md:h-14 font-bold" asChild>
+            {/* Navigation Buttons */}
+            <div className="flex items-center gap-2 md:gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 md:h-10 text-sm md:text-base font-semibold"
+                asChild
+              >
                 <Link href="/services">
-                  <Activity className="w-5 h-5 ml-2" />
+                  <Stethoscope className="w-4 h-4 ml-2" />
                   الخدمات الطبية
                 </Link>
               </Button>
+              <Button
+                size="sm"
+                className="h-9 md:h-10 text-sm md:text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                asChild
+              >
+                <Link href="/dentist-landing">
+                  <Stethoscope className="w-4 h-4 ml-2" />
+                  هل أنت طبيب أسنان؟
+                </Link>
+              </Button>
             </div>
+          </div>
+        </div>
+      </header>
+
+      {/* بطاقات ترويجية للخدمات الطبية */}
+      <section className="px-4 sm:px-6 lg:px-8 pt-8 md:pt-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* العيادات القريبة */}
+            <Link href="/services?tab=clinics">
+              <Card className="bento-card bg-gradient-to-br from-blue-500 to-purple-600 text-white border-none cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">عيادات قريبة</h3>
+                  <p className="text-white/90 text-sm">ابحث عن عيادات قريبة منك</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* التشخيص الذكي */}
+            <Link href="/services?tab=diagnosis">
+              <Card className="bento-card bg-gradient-to-br from-purple-500 to-pink-600 text-white border-none cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Brain className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">التشخيص الذكي</h3>
+                  <p className="text-white/90 text-sm">احصل على تشخيص دقيق</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* طوارئ الأسنان */}
+            <Link href="/services?tab=emergency">
+              <Card className="bento-card bg-gradient-to-br from-red-500 to-orange-600 text-white border-none cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">طوارئ الأسنان</h3>
+                  <p className="text-white/90 text-sm">إسعافات أولية فورية</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* المقالات التعليمية */}
+            <Link href="/services?tab=articles">
+              <Card className="bento-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-none cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">مقالات تعليمية</h3>
+                  <p className="text-white/90 text-sm">تعلم المزيد عن صحة أسنانك</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Features Grid - Bento UI */}
-      <section className="py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+      {/* خريطة تفاعلية للعيادات القريبة */}
+      <section className="px-4 sm:px-6 lg:px-8 pt-12 md:pt-16">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {/* Main Feature - Dentists Hub (takes 2 columns on large screens) */}
-            <Card className="bento-card lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-700 text-white border-none overflow-hidden relative group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2 group-hover:scale-110 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
-                  <Stethoscope className="w-8 h-8 md:w-10 md:h-10" />
-                </div>
-                <CardTitle className="text-white text-2xl md:text-3xl mb-3">مركز الأطباء</CardTitle>
-                <CardDescription className="text-white/90 text-base md:text-lg mb-4">
-                  إدارة شاملة للعيادات والمرضى والخطط العلاجية بأحدث التقنيات
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <ul className="space-y-2 mb-6 text-white/90 text-sm md:text-base">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-                    إدارة ملفات المرضى
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-                    جدولة المواعيد الذكية
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-                    التقارير المالية والإحصائية
-                  </li>
-                </ul>
-                <Button variant="secondary" size="lg" className="w-full font-bold" asChild>
-                  <Link href="/auth/login?role=dentist">
-                    الدخول للمركز
-                    <Sparkles className="w-4 h-4 mr-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2 mb-2">
+                <MapPin className="w-7 h-7 md:w-8 md:h-8 text-blue-600" />
+                العيادات القريبة منك
+              </h2>
+              <p className="text-gray-600">اكتشف أفضل العيادات في منطقتك</p>
+            </div>
+          </div>
 
-            {/* Clinic Management */}
-            <Card className="bento-card bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-emerald-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <Building2 className="w-7 h-7 text-white" />
+          {/* Placeholder للخريطة التفاعلية */}
+          <Card className="bento-card mb-6 overflow-hidden">
+            <div className="w-full h-64 md:h-80 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center relative">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgwLDAsMCwwLjA1KSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIiAvPjwvc3ZnPg==')] opacity-40"></div>
+              <div className="text-center z-10">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+                  <MapPin className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle className="text-emerald-900">إدارة العيادات</CardTitle>
-                <CardDescription className="text-emerald-700">
-                  نظام متكامل لإدارة عدة عيادات بسهولة
-                </CardDescription>
-              </CardHeader>
-            </Card>
+                <p className="text-lg font-semibold text-gray-700 mb-2">الخريطة التفاعلية</p>
+                <p className="text-sm text-gray-600 max-w-md mx-auto">
+                  عرض العيادات المسجلة والمشتركة في باقة المنصة على الخريطة
+                </p>
+              </div>
+            </div>
+          </Card>
 
-            {/* Labs */}
-            <Card className="bento-card bg-gradient-to-br from-purple-50 to-fuchsia-100 border-purple-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-purple-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <FlaskConical className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-purple-900">معامل الأسنان</CardTitle>
-                <CardDescription className="text-purple-700">
-                  إدارة الطلبات والتواصل مع المختبرات
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          {/* قائمة العيادات القريبة - أفقية قابلة للتمرير */}
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">العيادات المميزة</h3>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/services?tab=clinics">
+                  عرض الكل
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                </Link>
+              </Button>
+            </div>
 
-            {/* Medical Services - Featured */}
-            <Card className="bento-card lg:col-span-2 bg-gradient-to-r from-pink-500 via-rose-600 to-red-600 text-white border-none overflow-hidden relative group">
-              <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 -translate-x-1/2"></div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                      <MapPin className="w-8 h-8 text-white" />
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+              {nearbyClinic.map((clinic) => (
+                <Card
+                  key={clinic.id}
+                  className="bento-card min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-start cursor-pointer hover:shadow-xl transition-shadow"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-3xl flex-shrink-0">
+                        {clinic.image}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <CardTitle className="text-base line-clamp-1">{clinic.name}</CardTitle>
+                          <Badge variant={clinic.isOpen ? "success" : "secondary"} className="text-xs">
+                            {clinic.isOpen ? "مفتوح" : "مغلق"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1 mb-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-semibold text-sm">{clinic.rating}</span>
+                          <span className="text-xs text-muted-foreground">({clinic.reviews})</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 text-center md:text-right">
-                    <h3 className="text-xl md:text-2xl font-bold mb-2">اكتشف أفضل العيادات</h3>
-                    <p className="text-white/90 text-sm md:text-base">
-                      ابحث عن عيادات قريبة منك واحجز موعدك بسهولة
-                    </p>
-                  </div>
-                  <Button variant="secondary" size="lg" className="font-bold" asChild>
-                    <Link href="/services">
-                      استكشف الآن
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Marketplace */}
-            <Card className="bento-card bg-gradient-to-br from-orange-50 to-amber-100 border-orange-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-orange-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <ShoppingBag className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-orange-900">المتجر الطبي</CardTitle>
-                <CardDescription className="text-orange-700">
-                  متجر متكامل للمعدات والمواد الطبية
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Appointments */}
-            <Card className="bento-card bg-gradient-to-br from-cyan-50 to-blue-100 border-cyan-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-cyan-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <Calendar className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-cyan-900">نظام الحجوزات</CardTitle>
-                <CardDescription className="text-cyan-700">
-                  تقويم تفاعلي ذكي لإدارة المواعيد
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Smart Diagnosis */}
-            <Card className="bento-card lg:col-span-2 bg-gradient-to-br from-violet-500 to-purple-700 text-white border-none overflow-hidden relative group">
-              <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-y-1/2 translate-x-1/2"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-3">
-                  <Brain className="w-8 h-8" />
-                </div>
-                <CardTitle className="text-white text-xl md:text-2xl">التشخيص الذكي</CardTitle>
-                <CardDescription className="text-violet-100">
-                  احصل على تشخيص أولي باستخدام الذكاء الاصطناعي
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Community */}
-            <Card className="bento-card bg-gradient-to-br from-indigo-50 to-blue-100 border-indigo-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-indigo-900">المجتمع الطبي</CardTitle>
-                <CardDescription className="text-indigo-700">
-                  شبكة تواصل مهنية ودورات تدريبية
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Messaging */}
-            <Card className="bento-card bg-gradient-to-br from-sky-50 to-cyan-100 border-sky-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-sky-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-sky-500 to-cyan-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <MessageSquare className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-sky-900">نظام الرسائل</CardTitle>
-                <CardDescription className="text-sky-700">
-                  تواصل فوري بين جميع الأطراف
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Jobs */}
-            <Card className="bento-card bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-200 hover:shadow-xl group overflow-hidden relative cursor-pointer">
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-300/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-              <CardHeader className="relative z-10">
-                <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                  <Briefcase className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-yellow-900">منصة الوظائف</CardTitle>
-                <CardDescription className="text-yellow-700">
-                  فرص عمل للأطباء والكوادر الطبية
-                </CardDescription>
-              </CardHeader>
-            </Card>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span className="line-clamp-1">{clinic.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Navigation className="w-4 h-4 flex-shrink-0" />
+                      <span>يبعد {clinic.distance}</span>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button variant="outline" size="sm" className="flex-1">
+                        <Phone className="w-4 h-4 ml-1" />
+                        اتصال
+                      </Button>
+                      <Button size="sm" className="flex-1">
+                        <Calendar className="w-4 h-4 ml-1" />
+                        حجز
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-white/50 backdrop-blur-sm">
+      {/* المقالات التعليمية */}
+      <section className="px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-3">
-                <Award className="w-6 h-6" />
-              </div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">500+</div>
-              <div className="text-sm text-gray-600">طبيب أسنان</div>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2 mb-2">
+                <FileText className="w-7 h-7 md:w-8 md:h-8 text-emerald-600" />
+                مقالات تعليمية
+              </h2>
+              <p className="text-gray-600">تعلم المزيد عن صحة أسنانك</p>
             </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white mb-3">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">200+</div>
-              <div className="text-sm text-gray-600">عيادة</div>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 text-white mb-3">
-                <Heart className="w-6 h-6" />
-              </div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">10k+</div>
-              <div className="text-sm text-gray-600">مريض راضٍ</div>
-            </div>
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white mb-3">
-                <TrendingUp className="w-6 h-6" />
-              </div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">95%</div>
-              <div className="text-sm text-gray-600">معدل الرضا</div>
-            </div>
+            <Button variant="outline" asChild>
+              <Link href="/services?tab=articles">
+                عرض جميع المقالات
+                <ArrowRight className="w-4 h-4 mr-2" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            {articles.map((article, index) => (
+              <Card
+                key={article.id}
+                className="bento-card min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-start cursor-pointer group"
+              >
+                <CardHeader className="text-center">
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                    {article.image}
+                  </div>
+                  <CardTitle className="text-lg line-clamp-2">{article.title}</CardTitle>
+                  <CardDescription className="text-sm line-clamp-2">{article.excerpt}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="font-semibold">
+                      <Clock className="w-3 h-3 ml-1" />
+                      {article.readTime}
+                    </Badge>
+                    <Button variant="ghost" size="sm">
+                      اقرأ المزيد
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-8 mt-20">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
-              <Sparkles className="w-6 h-6" />
+      <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shadow-xl">
+                <Sparkles className="w-8 h-8" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xl md:text-2xl font-bold mb-2">المجتمع الذكي لطب الأسنان</h3>
+              <p className="text-gray-400 mb-1">
+                © 2024 Smart Dental Community. جميع الحقوق محفوظة.
+              </p>
+              <p className="text-gray-500 text-sm">
+                منصة احترافية لإدارة عيادات الأسنان في العراق
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+              <Link href="/about" className="hover:text-white transition-colors">من نحن</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">سياسة الخصوصية</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">الشروط والأحكام</Link>
+              <Link href="/contact" className="hover:text-white transition-colors">اتصل بنا</Link>
             </div>
           </div>
-          <p className="text-gray-400 mb-2">
-            © 2024 Smart Dental Community. جميع الحقوق محفوظة.
-          </p>
-          <p className="text-gray-500 text-sm">
-            منصة احترافية لإدارة عيادات الأسنان في العراق
-          </p>
         </div>
       </footer>
     </main>

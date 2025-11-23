@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { Tajawal } from "next/font/google";
 import "./globals.css";
-
-const tajawal = Tajawal({
-  weight: ['300', '400', '500', '700', '800'],
-  subsets: ["arabic"],
-  display: 'swap',
-});
+import { NotificationToast } from "@/components/shared/notification-toast";
+import { CartSidebar } from "@/components/shared/cart-sidebar";
+import { BookingDialog } from "@/components/shared/booking-dialog";
 
 export const metadata: Metadata = {
   title: "Smart Dental Community | المجتمع الذكي لطب الأسنان",
@@ -28,8 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={tajawal.className}>
+      <body className="font-arabic">
         {children}
+        <NotificationToast />
+        <CartSidebar />
+        <BookingDialog />
       </body>
     </html>
   );

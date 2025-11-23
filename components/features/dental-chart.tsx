@@ -14,6 +14,18 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DollarSign,
+  FlaskConical,
+  Clock,
+  FileText,
+  User,
+  Calendar,
+  CheckCircle2,
+  Plus
+} from "lucide-react"
 
 // FDI Numbering System (1-32)
 const upperTeeth = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]
@@ -31,17 +43,126 @@ const toothConditions = [
   { value: "DAMAGED", label: "تالف", color: "bg-red-700" },
 ]
 
+// قائمة العلاجات - يجب أن تتطابق مع قسم العلاجات
 const treatments = [
-  { value: "FILLING", label: "حشوة" },
-  { value: "ROOT_CANAL", label: "علاج عصب" },
-  { value: "EXTRACTION", label: "خلع" },
-  { value: "CROWN", label: "تاج" },
-  { value: "BRIDGE", label: "جسر" },
-  { value: "IMPLANT", label: "زراعة" },
-  { value: "ORTHODONTICS", label: "تقويم" },
-  { value: "CLEANING", label: "تنظيف" },
-  { value: "WHITENING", label: "تبييض" },
-  { value: "DENTURE", label: "طقم أسنان" },
+  {
+    value: "FILLING",
+    label: "حشوة تجميلية",
+    icon: "🦷",
+    defaultSessions: 1,
+    needsLab: false,
+    basePrice: 150000,
+    sessionDetails: [
+      { session: 1, name: "الحشوة", duration: 30, fields: ["نوع المادة", "اللون"] }
+    ]
+  },
+  {
+    value: "ROOT_CANAL",
+    label: "علاج عصب",
+    icon: "⚕️",
+    defaultSessions: 3,
+    needsLab: false,
+    basePrice: 750000,
+    sessionDetails: [
+      { session: 1, name: "فتح وتنظيف", duration: 60, fields: ["طول الجذور", "الملفات المستخدمة"] },
+      { session: 2, name: "حشو مؤقت", duration: 45, fields: ["الملفات", "المادة الحاشية"] },
+      { session: 3, name: "الحشوة النهائية", duration: 45, fields: ["نوع الحشوة"] }
+    ]
+  },
+  {
+    value: "EXTRACTION",
+    label: "خلع",
+    icon: "🔧",
+    defaultSessions: 1,
+    needsLab: false,
+    basePrice: 100000,
+    sessionDetails: [
+      { session: 1, name: "الخلع", duration: 20, fields: ["نوع الخلع", "التخدير"] }
+    ]
+  },
+  {
+    value: "CROWN",
+    label: "تاج خزفي",
+    icon: "👑",
+    defaultSessions: 2,
+    needsLab: true,
+    basePrice: 1200000,
+    sessionDetails: [
+      { session: 1, name: "تحضير وطبعة", duration: 60, fields: ["نوع التاج", "اللون", "المختبر"] },
+      { session: 2, name: "التركيب", duration: 30, fields: ["نوع التثبيت"] }
+    ]
+  },
+  {
+    value: "BRIDGE",
+    label: "جسر ثابت",
+    icon: "🌉",
+    defaultSessions: 2,
+    needsLab: true,
+    basePrice: 1800000,
+    sessionDetails: [
+      { session: 1, name: "تحضير وطبعة", duration: 90, fields: ["عدد الوحدات", "المادة", "المختبر"] },
+      { session: 2, name: "التركيب", duration: 45, fields: ["نوع التثبيت"] }
+    ]
+  },
+  {
+    value: "IMPLANT",
+    label: "زراعة",
+    icon: "🦴",
+    defaultSessions: 3,
+    needsLab: true,
+    basePrice: 2500000,
+    sessionDetails: [
+      { session: 1, name: "زراعة الجذر", duration: 90, fields: ["نوع الزرعة", "القطر", "الطول"] },
+      { session: 2, name: "فحص الالتئام", duration: 20, waitPeriod: "3-6 أشهر" },
+      { session: 3, name: "التاج النهائي", duration: 45, fields: ["نوع التاج", "المختبر"] }
+    ]
+  },
+  {
+    value: "ORTHODONTICS",
+    label: "تقويم",
+    icon: "🔗",
+    defaultSessions: 24,
+    needsLab: false,
+    basePrice: 3500000,
+    sessionDetails: [
+      { session: 1, name: "التركيب الأولي", duration: 120, fields: ["نوع التقويم"] }
+    ]
+  },
+  {
+    value: "CLEANING",
+    label: "تنظيف",
+    icon: "✨",
+    defaultSessions: 1,
+    needsLab: false,
+    basePrice: 50000,
+    sessionDetails: [
+      { session: 1, name: "التنظيف", duration: 30, fields: ["نوع التنظيف"] }
+    ]
+  },
+  {
+    value: "WHITENING",
+    label: "تبييض",
+    icon: "💎",
+    defaultSessions: 1,
+    needsLab: false,
+    basePrice: 400000,
+    sessionDetails: [
+      { session: 1, name: "التبييض", duration: 60, fields: ["نوع التبييض", "الدرجة"] }
+    ]
+  },
+  {
+    value: "DENTURE",
+    label: "طقم أسنان",
+    icon: "🦷",
+    defaultSessions: 3,
+    needsLab: true,
+    basePrice: 1500000,
+    sessionDetails: [
+      { session: 1, name: "الطبعة الأولية", duration: 30, fields: ["نوع الطقم", "المختبر"] },
+      { session: 2, name: "التجربة", duration: 20 },
+      { session: 3, name: "التسليم", duration: 30 }
+    ]
+  },
 ]
 
 interface ToothData {
@@ -51,16 +172,42 @@ interface ToothData {
   notes?: string
 }
 
+interface TreatmentPlanData {
+  toothNumber: number
+  treatmentType: string
+  treatmentName: string
+  condition: string
+  price: number
+  sessions: number
+  needsLab: boolean
+  doctorName?: string
+  notes?: string
+  sessionDetails: any[]
+  customFields?: { [key: string]: string }
+}
+
 interface DentalChartProps {
   patientId: string
   teeth?: ToothData[]
   onUpdate?: (teeth: ToothData[]) => void
+  onCreateTreatmentPlan?: (plan: TreatmentPlanData) => void
+  doctorName?: string
 }
 
-export function DentalChart({ patientId, teeth = [], onUpdate }: DentalChartProps) {
+export function DentalChart({
+  patientId,
+  teeth = [],
+  onUpdate,
+  onCreateTreatmentPlan,
+  doctorName = "د. محمد أحمد"
+}: DentalChartProps) {
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentTooth, setCurrentTooth] = useState<ToothData | null>(null)
+  const [selectedTreatment, setSelectedTreatment] = useState<string | null>(null)
+  const [treatmentPrice, setTreatmentPrice] = useState<number>(0)
+  const [treatmentNotes, setTreatmentNotes] = useState<string>("")
+  const [customFields, setCustomFields] = useState<{ [key: string]: string }>({})
 
   const getToothData = (number: number): ToothData | undefined => {
     return teeth.find(t => t.number === number)
@@ -77,21 +224,64 @@ export function DentalChart({ patientId, teeth = [], onUpdate }: DentalChartProp
     setSelectedTooth(number)
     const existing = getToothData(number)
     setCurrentTooth(existing || { number, condition: "HEALTHY" })
+    setSelectedTreatment(null)
+    setTreatmentPrice(0)
+    setTreatmentNotes("")
+    setCustomFields({})
     setDialogOpen(true)
+  }
+
+  const handleTreatmentSelect = (treatmentValue: string) => {
+    setSelectedTreatment(treatmentValue)
+    const treatment = treatments.find(t => t.value === treatmentValue)
+    if (treatment) {
+      setTreatmentPrice(treatment.basePrice)
+    }
   }
 
   const handleSaveToothState = () => {
     if (!currentTooth) return
-    // TODO: Save tooth state only
-    console.log("Saving tooth state:", currentTooth)
+    if (onUpdate) {
+      const updatedTeeth = teeth.filter(t => t.number !== currentTooth.number)
+      updatedTeeth.push(currentTooth)
+      onUpdate(updatedTeeth)
+    }
     setDialogOpen(false)
   }
 
-  const handleSaveTreatmentPlan = () => {
-    if (!currentTooth) return
-    // TODO: Save and create treatment plan
-    console.log("Creating treatment plan:", currentTooth)
-    setDialogOpen(false)
+  const handleCreateTreatmentPlan = () => {
+    if (!currentTooth || !selectedTreatment) return
+
+    const treatment = treatments.find(t => t.value === selectedTreatment)
+    if (!treatment) return
+
+    const planData: TreatmentPlanData = {
+      toothNumber: currentTooth.number,
+      treatmentType: selectedTreatment,
+      treatmentName: treatment.label,
+      condition: currentTooth.condition,
+      price: treatmentPrice,
+      sessions: treatment.defaultSessions,
+      needsLab: treatment.needsLab,
+      doctorName: doctorName,
+      notes: treatmentNotes,
+      sessionDetails: treatment.sessionDetails,
+      customFields: customFields
+    }
+
+    if (onCreateTreatmentPlan) {
+      onCreateTreatmentPlan(planData)
+    }
+
+    // Save tooth state as well
+    handleSaveToothState()
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-IQ', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+    }).format(amount) + " د.ع"
   }
 
   const Tooth = ({ number, isUpper }: { number: number; isUpper: boolean }) => {
@@ -154,99 +344,260 @@ export function DentalChart({ patientId, teeth = [], onUpdate }: DentalChartProp
         </div>
       </div>
 
-      {/* Tooth Details Dialog */}
+      {/* Tooth Details Dialog - Enhanced Professional Version */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>تفاصيل السن رقم {currentTooth?.number}</DialogTitle>
-            <DialogDescription>
-              حدد حالة السن والعلاج المطلوب
-            </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                {currentTooth?.number}
+              </div>
+              <div>
+                <DialogTitle className="text-xl">تفاصيل السن رقم {currentTooth?.number}</DialogTitle>
+                <DialogDescription>
+                  حدد حالة السن والعلاج المطلوب - الطبيب المعالج: {doctorName}
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
           {currentTooth && (
-            <div className="space-y-6 py-4">
-              {/* Tooth Condition */}
-              <div className="space-y-3">
-                <Label>حالة السن</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {toothConditions.map(condition => (
-                    <button
-                      key={condition.value}
-                      onClick={() => setCurrentTooth({ ...currentTooth, condition: condition.value })}
-                      className={cn(
-                        "p-3 rounded-lg border-2 transition-all text-sm font-medium",
-                        currentTooth.condition === condition.value
-                          ? "border-primary bg-primary/10"
-                          : "border-gray-200 hover:border-primary/50"
-                      )}
-                    >
-                      <div className={cn("w-6 h-6 rounded mx-auto mb-2", condition.color)}></div>
-                      {condition.label}
-                    </button>
-                  ))}
+            <Tabs defaultValue="condition" className="mt-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="condition">حالة السن</TabsTrigger>
+                <TabsTrigger value="treatment">الخطة العلاجية</TabsTrigger>
+              </TabsList>
+
+              {/* Tab 1: Tooth Condition */}
+              <TabsContent value="condition" className="space-y-6 mt-6">
+                {/* Tooth Condition */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">حالة السن الحالية</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {toothConditions.map(condition => (
+                      <button
+                        key={condition.value}
+                        onClick={() => setCurrentTooth({ ...currentTooth, condition: condition.value })}
+                        className={cn(
+                          "p-4 rounded-xl border-2 transition-all text-sm font-medium",
+                          currentTooth.condition === condition.value
+                            ? "border-primary bg-primary/10 shadow-lg scale-105"
+                            : "border-gray-200 hover:border-primary/50 hover:shadow-md"
+                        )}
+                      >
+                        <div className={cn("w-8 h-8 rounded-lg mx-auto mb-2", condition.color)}></div>
+                        {condition.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Previous Treatment */}
-              <div className="space-y-3">
-                <Label>العلاج السابق (إن وجد)</Label>
-                <select
-                  value={currentTooth.previousTreatment || ""}
-                  onChange={(e) => setCurrentTooth({ ...currentTooth, previousTreatment: e.target.value })}
-                  className="w-full h-10 rounded-md border border-input bg-background px-3"
-                >
-                  <option value="">لا يوجد</option>
-                  {treatments.map(treatment => (
-                    <option key={treatment.value} value={treatment.value}>
-                      {treatment.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Required Treatment */}
-              <div className="space-y-3">
-                <Label>العلاج المطلوب</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {treatments.map(treatment => (
-                    <button
-                      key={treatment.value}
-                      className={cn(
-                        "p-3 rounded-lg border-2 transition-all text-sm font-medium hover:border-primary/50 border-gray-200"
-                      )}
-                    >
-                      {treatment.label}
-                    </button>
-                  ))}
+                {/* Previous Treatment */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">العلاج السابق (إن وجد)</Label>
+                  <select
+                    value={currentTooth.previousTreatment || ""}
+                    onChange={(e) => setCurrentTooth({ ...currentTooth, previousTreatment: e.target.value })}
+                    className="w-full h-12 rounded-lg border-2 border-input bg-background px-4 text-base"
+                  >
+                    <option value="">لا يوجد علاج سابق</option>
+                    {treatments.map(treatment => (
+                      <option key={treatment.value} value={treatment.value}>
+                        {treatment.icon} {treatment.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div>
 
-              {/* Treatment-Specific Fields (shown when treatment is selected) */}
-              {/* TODO: Add dynamic fields based on selected treatment */}
+                {/* General Notes */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">ملاحظات عامة</Label>
+                  <textarea
+                    value={currentTooth.notes || ""}
+                    onChange={(e) => setCurrentTooth({ ...currentTooth, notes: e.target.value })}
+                    className="w-full min-h-[100px] rounded-lg border-2 border-input bg-background px-4 py-3 text-base"
+                    placeholder="أضف أي ملاحظات حول حالة السن..."
+                  />
+                </div>
+              </TabsContent>
 
-              {/* Notes */}
-              <div className="space-y-3">
-                <Label>ملاحظات</Label>
-                <textarea
-                  value={currentTooth.notes || ""}
-                  onChange={(e) => setCurrentTooth({ ...currentTooth, notes: e.target.value })}
-                  className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2"
-                  placeholder="أضف ملاحظات إضافية..."
-                />
-              </div>
-            </div>
+              {/* Tab 2: Treatment Plan */}
+              <TabsContent value="treatment" className="space-y-6 mt-6">
+                {/* Required Treatment Selection */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    اختر العلاج المطلوب
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {treatments.map(treatment => (
+                      <button
+                        key={treatment.value}
+                        onClick={() => handleTreatmentSelect(treatment.value)}
+                        className={cn(
+                          "p-4 rounded-xl border-2 transition-all text-sm font-medium text-right",
+                          selectedTreatment === treatment.value
+                            ? "border-primary bg-primary/10 shadow-lg"
+                            : "border-gray-200 hover:border-primary/50 hover:shadow-md"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-3xl">{treatment.icon}</div>
+                          <div className="flex-1">
+                            <p className="font-bold">{treatment.label}</p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {treatment.defaultSessions} جلسة
+                              {treatment.needsLab && (
+                                <>
+                                  <FlaskConical className="w-3 h-3 mr-2" />
+                                  يحتاج مختبر
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Treatment Details (shown when treatment is selected) */}
+                {selectedTreatment && (() => {
+                  const treatment = treatments.find(t => t.value === selectedTreatment)
+                  if (!treatment) return null
+
+                  return (
+                    <div className="space-y-6 p-6 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          تفاصيل العلاج: {treatment.label}
+                        </h3>
+                        <Badge variant="info" className="text-sm">
+                          {treatment.defaultSessions} جلسة
+                        </Badge>
+                      </div>
+
+                      {/* Session Details */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold">تفاصيل الجلسات</Label>
+                        <div className="space-y-2">
+                          {treatment.sessionDetails.map((session: any, index: number) => (
+                            <div key={index} className="p-3 rounded-lg bg-white border border-gray-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
+                                    {session.session}
+                                  </div>
+                                  <span className="font-semibold text-sm">{session.name}</span>
+                                </div>
+                                {session.duration && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <Clock className="w-3 h-3 ml-1" />
+                                    {session.duration} دقيقة
+                                  </Badge>
+                                )}
+                              </div>
+                              {session.fields && (
+                                <div className="text-xs text-muted-foreground mr-8">
+                                  الحقول المطلوبة: {session.fields.join(" • ")}
+                                </div>
+                              )}
+                              {session.waitPeriod && (
+                                <div className="text-xs text-orange-600 mr-8 mt-1">
+                                  ⏰ فترة انتظار: {session.waitPeriod}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Financial Details */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm flex items-center gap-1">
+                            <DollarSign className="w-4 h-4" />
+                            التكلفة المتوقعة
+                          </Label>
+                          <Input
+                            type="number"
+                            value={treatmentPrice}
+                            onChange={(e) => setTreatmentPrice(Number(e.target.value))}
+                            className="h-12 text-lg font-bold"
+                            placeholder="0"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            السعر الافتراضي: {formatCurrency(treatment.basePrice)}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm flex items-center gap-1">
+                            <User className="w-4 h-4" />
+                            الطبيب المعالج
+                          </Label>
+                          <Input
+                            value={doctorName}
+                            disabled
+                            className="h-12 text-base bg-gray-50"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Lab Order */}
+                      {treatment.needsLab && (
+                        <div className="p-4 rounded-lg bg-purple-50 border-2 border-purple-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FlaskConical className="w-5 h-5 text-purple-600" />
+                            <span className="font-bold text-purple-900">يتطلب طلب مختبر</span>
+                          </div>
+                          <p className="text-sm text-purple-700">
+                            سيتم إنشاء طلب مختبر تلقائياً عند إضافة الخطة العلاجية
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Treatment Notes */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">ملاحظات العلاج</Label>
+                        <textarea
+                          value={treatmentNotes}
+                          onChange={(e) => setTreatmentNotes(e.target.value)}
+                          className="w-full min-h-[80px] rounded-lg border-2 border-input bg-white px-3 py-2 text-sm"
+                          placeholder="ملاحظات خاصة بهذا العلاج، تعليمات للجلسات، إلخ..."
+                        />
+                      </div>
+                    </div>
+                  )
+                })()}
+              </TabsContent>
+            </Tabs>
           )}
 
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+          <Separator className="my-4" />
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="flex-1">
               إلغاء
             </Button>
-            <Button variant="outline" onClick={handleSaveToothState}>
-              حفظ حالة السن فقط
+            <Button
+              variant="outline"
+              onClick={handleSaveToothState}
+              className="flex-1"
+              disabled={!currentTooth}
+            >
+              <CheckCircle2 className="w-4 h-4 ml-2" />
+              حفظ حالة السن
             </Button>
-            <Button onClick={handleSaveTreatmentPlan}>
-              حفظ الخطة العلاجية
+            <Button
+              onClick={handleCreateTreatmentPlan}
+              className="flex-1"
+              disabled={!currentTooth || !selectedTreatment}
+            >
+              <Plus className="w-4 h-4 ml-2" />
+              إضافة الخطة العلاجية
             </Button>
           </DialogFooter>
         </DialogContent>

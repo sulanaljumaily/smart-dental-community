@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { UserCog, Plus, Edit, DollarSign, Users, TrendingUp } from "lucide-react"
+import { UserCog, Plus, Edit, DollarSign, Users, TrendingUp, Shield, Key, Eye, EyeOff } from "lucide-react"
+import { ROLE_LABELS, PERMISSION_GROUPS, PERMISSION_LABELS } from "@/lib/permissions"
 
 const STAFF_ROLES = [
   { value: "OWNER", label: "مالك", color: "from-purple-500 to-purple-700" },
@@ -27,6 +28,10 @@ const STAFF_ROLES = [
 
 export default function StaffPage() {
   const [showDialog, setShowDialog] = useState(false)
+  const [showPermissionsDialog, setShowPermissionsDialog] = useState(false)
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [selectedStaff, setSelectedStaff] = useState<any>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const staff = [
     {
@@ -132,8 +137,40 @@ export default function StaffPage() {
                 <Input placeholder="07XXXXXXXXX" dir="ltr" />
               </div>
               <div className="space-y-2">
-                <Label>الراتب الشهري</Label>
+                <Label>كلمة المرور</Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="كلمة المرور للدخول إلى النظام"
+                    dir="ltr"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>التخصص (اختياري)</Label>
+                <Input placeholder="تقويم الأسنان" />
+              </div>
+              <div className="space-y-2">
+                <Label>الراتب الشهري (اختياري)</Label>
                 <Input type="number" placeholder="1000000" />
+              </div>
+              <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
+                <p className="text-xs text-blue-800">
+                  💡 سيتم استخدام الصلاحيات الافتراضية حسب الدور الوظيفي. يمكنك تعديلها لاحقاً.
+                </p>
               </div>
               <Button className="w-full">إضافة للطاقم</Button>
             </div>
@@ -261,8 +298,29 @@ export default function StaffPage() {
                     <Edit className="w-4 h-4 ml-1" />
                     تعديل
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedStaff(member)
+                      setShowPermissionsDialog(true)
+                    }}
+                  >
+                    <Shield className="w-4 h-4 ml-1" />
                     الصلاحيات
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedStaff(member)
+                      setShowPasswordDialog(true)
+                    }}
+                  >
+                    <Key className="w-4 h-4 ml-1" />
+                    كلمة المرور
                   </Button>
                 </div>
               </CardContent>
@@ -270,6 +328,138 @@ export default function StaffPage() {
           )
         })}
       </div>
+
+      {/* Permissions Dialog */}
+      <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>إدارة الصلاحيات - {selectedStaff?.name}</DialogTitle>
+            <DialogDescription>
+              اختر الصلاحيات المخصصة لهذا العضو. الصلاحيات الافتراضية تعتمد على الدور الوظيفي.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {Object.entries(PERMISSION_GROUPS).map(([groupKey, group]) => (
+              <div key={groupKey} className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">{group.label}</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {group.permissions.map((permission) => (
+                    <div key={permission} className="flex items-center space-x-2 space-x-reverse">
+                      <input
+                        type="checkbox"
+                        id={`perm-${permission}`}
+                        className="w-4 h-4 rounded border-gray-300"
+                        defaultChecked={selectedStaff?.permissions?.includes(permission) || false}
+                      />
+                      <label
+                        htmlFor={`perm-${permission}`}
+                        className="text-sm font-medium leading-none cursor-pointer"
+                      >
+                        {PERMISSION_LABELS[permission]}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowPermissionsDialog(false)}
+              className="flex-1"
+            >
+              إلغاء
+            </Button>
+            <Button
+              onClick={() => {
+                // TODO: حفظ الصلاحيات
+                setShowPermissionsDialog(false)
+              }}
+              className="flex-1"
+            >
+              حفظ الصلاحيات
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تغيير كلمة المرور - {selectedStaff?.name}</DialogTitle>
+            <DialogDescription>
+              قم بتعيين كلمة مرور جديدة لهذا العضو. سيحتاج إلى استخدامها لتسجيل الدخول.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="أدخل كلمة المرور الجديدة"
+                  dir="ltr"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">تأكيد كلمة المرور</Label>
+              <Input
+                id="confirm-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="أعد إدخال كلمة المرور"
+                dir="ltr"
+              />
+            </div>
+
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
+              <p className="text-xs text-blue-800">
+                💡 تأكد من أن كلمة المرور تحتوي على الأقل على 8 أحرف وتتضمن أحرف وأرقام ورموز خاصة.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowPasswordDialog(false)}
+              className="flex-1"
+            >
+              إلغاء
+            </Button>
+            <Button
+              onClick={() => {
+                // TODO: حفظ كلمة المرور
+                setShowPasswordDialog(false)
+                setShowPassword(false)
+              }}
+              className="flex-1"
+            >
+              حفظ كلمة المرور
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

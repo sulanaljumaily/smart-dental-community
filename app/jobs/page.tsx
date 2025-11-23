@@ -368,7 +368,7 @@ export default function JobsPage() {
                         <div>
                           <div className="flex items-start justify-between mb-1">
                             <h3 className="font-bold text-lg">{job.title}</h3>
-                            {job.isFeatured && (
+                            {'isFeatured' in job && job.isFeatured && (
                               <Badge variant="default">مميزة</Badge>
                             )}
                           </div>
