@@ -225,6 +225,14 @@ model User {
   comments         Comment[]
   jobs             Job[]
 
+  // Medical Community Relations
+  courseEnrollments  CourseEnrollment[]  @relation("CourseEnrollments")
+  webinarEnrollments WebinarEnrollment[] @relation("WebinarEnrollments")
+  createdGroups      MedicalGroup[]      @relation("CreatedGroups")
+  groupMemberships   GroupMembership[]   @relation("GroupMemberships")
+  groupPosts         GroupPost[]         @relation("GroupPosts")
+  promotions         DentistPromotion[]  @relation("DentistPromotions")
+
   @@index([email])
   @@index([role])
 }
@@ -240,6 +248,11 @@ model DentistProfile {
   bio               String? @db.Text
   address           String?
   city              String?
+  province          IraqiProvince? // المحافظة
+
+  // Elite Status
+  isElite       Boolean @default(false) // هل هو من النخبة
+  eliteProvince IraqiProvince? // المحافظة التي تم الترقية فيها
 
   subscriptionTier   SubscriptionTier @default(FREE)
   subscriptionEndsAt DateTime?
@@ -1065,4 +1078,365 @@ model Notification {
   @@index([isRead])
   @@index([clinicId])
   @@index([type])
+}
+
+// =======================================
+// MEDICAL COMMUNITY EDUCATION - التعليم في المجتمع الطبي
+// =======================================
+
+enum CourseStatus {
+  DRAFT // مسودة
+  PUBLISHED // منشور
+  COMPLETED // مكتمل
+  CANCELLED // ملغى
+}
+
+enum WebinarStatus {
+  SCHEDULED // مجدول
+  LIVE // جاري البث
+  COMPLETED // مكتمل
+  CANCELLED // ملغى
+}
+
+enum EnrollmentStatus {
+  REGISTERED // مسجل
+  IN_PROGRESS // جاري
+  COMPLETED // مكتمل
+  DROPPED // منسحب
+}
+
+enum IraqiProvince {
+  BAGHDAD // بغداد
+  NINEVEH // نينوى
+  BASRA // البصرة
+  DIYALA // ديالى
+  ANBAR // الأنبار
+  NAJAF // النجف
+  KARBALA // كربلاء
+  ERBIL // أربيل
+  SULAYMANIYAH // السليمانية
+  DOHUK // دهوك
+  KIRKUK // كركوك
+  MAYSAN // ميسان
+  WASIT // واسط
+  SALADIN // صلاح الدين
+  DHI_QAR // ذي قار
+  MUTHANNA // المثنى
+  QADISIYYAH // القادسية
+  BABIL // بابل
+}
+
+// الدورات التعليمية
+model Course {
+  id String @id @default(cuid())
+
+  title       String
+  description String  @db.Text
+  objectives  String? @db.Text
+  syllabus    Json? // محتوى المنهج
+
+  category String // التصنيف
+  level    String @default("Beginner") // Beginner, Intermediate, Advanced
+
+  coverImage String?
+  videoUrl   String?
+  materials  Json[] @default([]) // المواد التعليمية [{title, url, type}]
+
+  duration      Int // بالساعات
+  totalSessions Int @default(1)
+
+  status CourseStatus @default(DRAFT)
+
+  // المحاضرون
+  instructors Json[] @default([]) // [{id, name, title, avatar}]
+
+  // التسجيل
+  maxEnrollments  Int? // الحد الأقصى للمشاركين
+  enrollmentCount Int  @default(0)
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  // إدارة المنصة
+  createdByAdmin Boolean @default(true)
+
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  enrollments CourseEnrollment[]
+
+  @@index([category])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// تسجيلات الدورات
+model CourseEnrollment {
+  id       String @id @default(cuid())
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("CourseEnrollments", fields: [userId], references: [id], onDelete: Cascade)
+
+  status   EnrollmentStatus @default(REGISTERED)
+  progress Int              @default(0) // 0-100%
+
+  completedSessions Int @default(0)
+
+  certificateUrl String? // رابط الشهادة
+
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  @@unique([courseId, userId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
+}
+
+// الندوات
+model Webinar {
+  id String @id @default(cuid())
+
+  title       String
+  description String  @db.Text
+  agenda      String? @db.Text
+
+  category String
+
+  coverImage String?
+  meetingUrl String? // رابط الاجتماع (Zoom, Google Meet, etc)
+
+  status WebinarStatus @default(SCHEDULED)
+
+  // المحاضرون
+  instructors Json[] @default([]) // [{id, name, title, avatar}]
+
+  // التسجيل
+  maxAttendees   Int? // الحد الأقصى للحضور
+  attendeeCount  Int  @default(0)
+
+  scheduledDate DateTime
+  duration      Int // بالدقائق
+
+  recordingUrl String? // رابط التسجيل
+
+  // إدارة المنصة
+  createdByAdmin Boolean @default(true)
+
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  enrollments WebinarEnrollment[]
+
+  @@index([category])
+  @@index([status])
+  @@index([scheduledDate])
+}
+
+// تسجيلات الندوات
+model WebinarEnrollment {
+  id        String  @id @default(cuid())
+  webinarId String
+  webinar   Webinar @relation(fields: [webinarId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("WebinarEnrollments", fields: [userId], references: [id], onDelete: Cascade)
+
+  attended Boolean @default(false)
+
+  certificateUrl String? // رابط الشهادة
+
+  registeredAt DateTime  @default(now())
+  attendedAt   DateTime?
+
+  @@unique([webinarId, userId])
+  @@index([userId])
+  @@index([webinarId])
+}
+
+// المصادر العلمية
+model ScientificResource {
+  id String @id @default(cuid())
+
+  title       String
+  description String? @db.Text
+
+  category String // Research Papers, Guidelines, Books, etc.
+
+  url         String // رابط المصدر
+  externalUrl String? // رابط خارجي إضافي
+  thumbnail   String?
+
+  author     String?
+  publisher  String?
+  publishedDate DateTime?
+
+  tags String[] // وسوم للبحث
+
+  views     Int @default(0)
+  downloads Int @default(0)
+
+  // إدارة المنصة
+  createdByAdminId String? // معرف الأدمن الذي أضاف المصدر
+
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+// النماذج ثلاثية الأبعاد
+model ThreeDModel {
+  id String @id @default(cuid())
+
+  title       String
+  description String? @db.Text
+
+  category String // Anatomy, Procedures, Dental Conditions, etc.
+
+  sketchfabUrl  String // رابط Sketchfab
+  sketchfabId   String? // معرف النموذج في Sketchfab
+  thumbnailUrl  String?
+
+  tags String[] // وسوم للبحث
+
+  views Int @default(0)
+
+  // إدارة المنصة
+  createdByAdminId String? // معرف الأدمن الذي أضاف النموذج
+
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([createdAt])
+}
+
+// =======================================
+// MEDICAL GROUPS - المجموعات الطبية
+// =======================================
+
+model MedicalGroup {
+  id String @id @default(cuid())
+
+  name        String
+  description String? @db.Text
+
+  category String? // Specialization, Region, Interest, etc.
+
+  coverImage String?
+  avatar     String?
+
+  privacy String @default("PUBLIC") // PUBLIC, PRIVATE
+
+  // المنشئ
+  creatorId String
+  creator   User   @relation("CreatedGroups", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  memberCount Int @default(1)
+  postCount   Int @default(0)
+
+  // الإعدادات
+  allowAdminOnly Boolean @default(false) // السماح بالنشر للمسؤولين فقط
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  memberships GroupMembership[]
+  posts       GroupPost[]
+
+  @@index([creatorId])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model GroupMembership {
+  id      String       @id @default(cuid())
+  groupId String
+  group   MedicalGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("GroupMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  role String @default("MEMBER") // ADMIN, MODERATOR, MEMBER
+
+  joinedAt DateTime @default(now())
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@index([groupId])
+}
+
+model GroupPost {
+  id      String       @id @default(cuid())
+  groupId String
+  group   MedicalGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("GroupPosts", fields: [authorId], references: [id], onDelete: Cascade)
+
+  content     String   @db.Text
+  images      String[]
+  attachments String[]
+
+  likes    Int @default(0)
+  comments Int @default(0)
+
+  isPinned Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+// =======================================
+// ELITE PROMOTIONS - ترقيات النخبة
+// =======================================
+
+model DentistPromotion {
+  id String @id @default(cuid())
+
+  dentistId String
+  dentist   User   @relation("DentistPromotions", fields: [dentistId], references: [id], onDelete: Cascade)
+
+  province IraqiProvince
+
+  // سبب الترقية
+  reason      String? @db.Text
+  achievements String? @db.Text
+
+  // المسؤول الذي قام بالترقية
+  promotedByAdminId String
+
+  isActive Boolean @default(true)
+
+  promotedAt DateTime @default(now())
+
+  @@unique([dentistId, province])
+  @@index([dentistId])
+  @@index([province])
+  @@index([promotedAt])
 }
