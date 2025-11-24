@@ -5,11 +5,17 @@ import prisma from '@/lib/prisma'
 import { z } from 'zod'
 
 const messageSchema = z.object({
+  conversationId: z.string().optional(), // اختياري لإنشاء محادثة جديدة تلقائياً
   receiverId: z.string(),
   content: z.string().min(1),
   type: z.enum(['STAFF', 'VENDOR', 'LAB', 'ADMIN', 'COMMUNITY', 'SYSTEM']).default('STAFF'),
   clinicId: z.string().optional(),
-  attachments: z.array(z.string()).default([]),
+  attachments: z.array(z.object({
+    name: z.string(),
+    url: z.string(),
+    type: z.string(),
+    size: z.number(),
+  })).default([]),
 })
 
 // GET - Fetch messages
@@ -90,10 +96,48 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const validatedData = messageSchema.parse(body)
 
+    let conversationId = validatedData.conversationId
+
+    // إذا لم يتم توفير conversationId، ابحث عن محادثة موجودة أو أنشئ واحدة جديدة
+    if (!conversationId) {
+      let conversation = await prisma.conversation.findFirst({
+        where: {
+          OR: [
+            {
+              participant1Id: session.user.id,
+              participant2Id: validatedData.receiverId,
+            },
+            {
+              participant1Id: validatedData.receiverId,
+              participant2Id: session.user.id,
+            },
+          ],
+        },
+      })
+
+      if (!conversation) {
+        conversation = await prisma.conversation.create({
+          data: {
+            participant1Id: session.user.id,
+            participant2Id: validatedData.receiverId,
+            type: validatedData.type,
+            clinicId: validatedData.clinicId,
+          },
+        })
+      }
+
+      conversationId = conversation.id
+    }
+
     const message = await prisma.message.create({
       data: {
+        conversationId,
         senderId: session.user.id,
-        ...validatedData,
+        receiverId: validatedData.receiverId,
+        content: validatedData.content,
+        type: validatedData.type,
+        clinicId: validatedData.clinicId,
+        attachments: validatedData.attachments,
       },
       include: {
         sender: {
@@ -114,6 +158,15 @@ export async function POST(req: NextRequest) {
             role: true,
           },
         },
+      },
+    })
+
+    // تحديث آخر رسالة في المحادثة
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: {
+        lastMessage: validatedData.content,
+        lastMessageAt: new Date(),
       },
     })
 
