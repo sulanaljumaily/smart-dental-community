@@ -537,6 +537,12 @@ model TreatmentPlan {
   notes   String? @db.Text
   details Json? // تفاصيل خاصة بالعلاج
 
+  // Lab Order Requirements
+  needsLabOrder Boolean @default(false) // هل يحتاج طلب مختبر
+  labOrderRequested Boolean @default(false) // تم طلب المختبر
+
+  status String @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -560,6 +566,39 @@ model TreatmentSession {
 
   notes   String? @db.Text
   details Json? // تفاصيل كل جلسة (طول الجذور، نوع الحشوة، إلخ)
+
+  // حقول تفصيلية لعلاج العصب
+  rootCanals       Int? // عدد قنوات العصب
+  canalLength      String? // طول القناة/العصب (مثال: 21mm)
+  filesUsed        String[] // الملفات المستخدمة (مثال: ["#15", "#20", "#25"])
+  rootFillingType  String? // نوع حشو العصب (Gutta-percha, MTA, etc)
+  rootFillingLength String? // طول حشو العصب
+  finalFillingType String? // نوع الحشوة النهائية (عادية/معقدة/تركيبة)
+
+  // حقول تفصيلية للتركيبات
+  crownType        String? // نوع التاج (خزفي، معدني، زيركون)
+  crownColor       String? // لون التاج/التركيبة
+  bridgeSpan       String? // نطاق الجسر (من سن إلى سن)
+  postAndCore      Boolean @default(false) // هل يحتاج post and core
+  needsCrownCoverage Boolean @default(false) // تغطية بالتاج
+
+  // حقول تفصيلية للتقويم
+  bracketType      String? // نوع التقويم (معدني، شفاف، خزفي)
+  archWireSize     String? // حجم السلك
+  elasticType      String? // نوع المطاط
+  tighteningAmount String? // مقدار الشد
+
+  // حقول تفصيلية للزراعة
+  implantBrand     String? // ماركة الزرعة
+  implantDiameter  String? // قطر الزرعة
+  implantLength    String? // طول الزرعة
+  healingPeriod    String? // فترة الالتئام
+  abutmentType     String? // نوع الدعامة
+
+  // حقول عامة
+  measurements     Json? // قياسات أخرى
+  materials        String[] // المواد المستخدمة
+  stage            String? // المرحلة الحالية
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -590,12 +629,22 @@ model LabOrder {
   paymentStatus PaymentStatus  @default(UNPAID)
 
   amount Float
+  platformFee Float @default(0) // نسبة المنصة
+
+  // Lab details
+  labIsInPlatform Boolean @default(false) // هل المختبر موجود في المنصة
+  customLabName   String? // اسم المختبر المخصص (للمختبرات غير المسجلة)
+  customLabPhone  String? // رقم هاتف المختبر المخصص
 
   dueDate       DateTime
   deliveredDate DateTime?
 
   deliveryStaffId String?
   deliveryStaff   LabDeliveryStaff? @relation(fields: [deliveryStaffId], references: [id], onDelete: SetNull)
+
+  // Tracking & Tasks
+  taskId String? // ربط بالمهمة المرتبطة
+  notificationSent Boolean @default(false) // تم إرسال الإشعار
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -675,7 +724,11 @@ model PatientFinance {
 
   amount      Float
   type        String // Payment, Charge
+  paymentMethod String @default("CASH") // CASH, CARD, INSTALLMENT
   description String?
+
+  // Link to treatment plan
+  planId String? // ربط بالخطة العلاجية
 
   createdAt DateTime @default(now())
 
@@ -806,6 +859,7 @@ model Order {
 
   status        String        @default("Pending") // Pending, Processing, Shipped, Delivered
   paymentStatus PaymentStatus @default(UNPAID)
+  paymentMethod String        @default("CASH") // CASH only for dental supplies
 
   subtotal    Float
   platformFee Float
