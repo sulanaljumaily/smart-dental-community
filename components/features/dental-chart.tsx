@@ -84,37 +84,113 @@ const treatments = [
     value: "CROWN",
     label: "تاج خزفي",
     icon: "👑",
-    defaultSessions: 2,
+    defaultSessions: 4,
     needsLab: true,
     basePrice: 1200000,
     sessionDetails: [
-      { session: 1, name: "تحضير وطبعة", duration: 60, fields: ["نوع التاج", "اللون", "المختبر"] },
-      { session: 2, name: "التركيب", duration: 30, fields: ["نوع التثبيت"] }
+      {
+        session: 1,
+        name: "الجلسة الأولى",
+        duration: 60,
+        fields: ["إجراء الجلسة الأولى"],
+        options: ["برد السن", "علاج عصب", "دعامة"]
+      },
+      {
+        session: 2,
+        name: "الجلسة الثانية",
+        duration: 45,
+        fields: ["إجراء الجلسة الثانية"],
+        options: ["برد إضافي", "تركيبة مؤقتة", "دعامة"]
+      },
+      {
+        session: 3,
+        name: "أخذ الطبعة",
+        duration: 30,
+        fields: ["نوع التاج", "اللون", "المختبر", "نوع الطبعة"]
+      },
+      {
+        session: 4,
+        name: "فحص وتركيب التاج النهائي",
+        duration: 30,
+        fields: ["نوع التثبيت", "الإطباق"]
+      }
     ]
   },
   {
     value: "BRIDGE",
     label: "جسر ثابت",
     icon: "🌉",
-    defaultSessions: 2,
+    defaultSessions: 4,
     needsLab: true,
     basePrice: 1800000,
     sessionDetails: [
-      { session: 1, name: "تحضير وطبعة", duration: 90, fields: ["عدد الوحدات", "المادة", "المختبر"] },
-      { session: 2, name: "التركيب", duration: 45, fields: ["نوع التثبيت"] }
+      {
+        session: 1,
+        name: "الجلسة الأولى - التحضير",
+        duration: 90,
+        fields: ["إجراء الجلسة الأولى"],
+        options: ["برد الأسنان الداعمة", "علاج عصب", "دعامة"]
+      },
+      {
+        session: 2,
+        name: "الجلسة الثانية",
+        duration: 60,
+        fields: ["إجراء الجلسة الثانية"],
+        options: ["برد إضافي", "جسر مؤقت", "دعامة"]
+      },
+      {
+        session: 3,
+        name: "أخذ الطبعة النهائية",
+        duration: 45,
+        fields: ["عدد الوحدات", "المادة", "اللون", "المختبر", "نوع الطبعة"]
+      },
+      {
+        session: 4,
+        name: "فحص وتركيب الجسر النهائي",
+        duration: 45,
+        fields: ["نوع التثبيت", "الإطباق", "فحص المفاصل"]
+      }
     ]
   },
   {
     value: "IMPLANT",
     label: "زراعة",
     icon: "🦴",
-    defaultSessions: 3,
+    defaultSessions: 5,
     needsLab: true,
     basePrice: 2500000,
     sessionDetails: [
-      { session: 1, name: "زراعة الجذر", duration: 90, fields: ["نوع الزرعة", "القطر", "الطول"] },
-      { session: 2, name: "فحص الالتئام", duration: 20, waitPeriod: "3-6 أشهر" },
-      { session: 3, name: "التاج النهائي", duration: 45, fields: ["نوع التاج", "المختبر"] }
+      {
+        session: 1,
+        name: "الفحص والتخطيط",
+        duration: 30,
+        fields: ["صورة بانوراما", "CT Scan", "تقييم العظم"]
+      },
+      {
+        session: 2,
+        name: "زراعة الجذر (Implant Placement)",
+        duration: 90,
+        fields: ["نوع الزرعة", "القطر", "الطول", "العمق", "نوع التخدير"],
+        waitPeriod: "3-6 أشهر للالتئام"
+      },
+      {
+        session: 3,
+        name: "فحص الالتئام والاندماج",
+        duration: 20,
+        fields: ["صورة أشعة", "فحص الاستقرار"]
+      },
+      {
+        session: 4,
+        name: "تركيب Healing Abutment وأخذ الطبعة",
+        duration: 45,
+        fields: ["نوع Abutment", "الطبعة", "اللون", "المختبر"]
+      },
+      {
+        session: 5,
+        name: "تركيب التاج النهائي",
+        duration: 30,
+        fields: ["نوع التاج", "نوع التثبيت", "الإطباق"]
+      }
     ]
   },
   {
@@ -125,7 +201,38 @@ const treatments = [
     needsLab: false,
     basePrice: 3500000,
     sessionDetails: [
-      { session: 1, name: "التركيب الأولي", duration: 120, fields: ["نوع التقويم"] }
+      {
+        session: 1,
+        name: "الفحص والتشخيص",
+        duration: 60,
+        fields: ["صور الأشعة", "قوالب الأسنان", "الصور الشخصية", "تحليل الحالة"]
+      },
+      {
+        session: 2,
+        name: "شرح خطة العلاج",
+        duration: 30,
+        fields: ["نوع التقويم", "المدة المتوقعة", "التكلفة"]
+      },
+      {
+        session: 3,
+        name: "التركيب الأولي (Bonding)",
+        duration: 120,
+        fields: ["نوع التقويم", "نوع الأسلاك", "Brackets"]
+      },
+      {
+        session: 4,
+        name: "أول متابعة",
+        duration: 30,
+        fields: ["تغيير السلك", "الملاحظات"],
+        waitPeriod: "4-6 أسابيع"
+      },
+      {
+        session: 5,
+        name: "متابعة دورية",
+        duration: 25,
+        fields: ["تعديل السلك", "المطاطات", "التقدم"],
+        note: "تتكرر كل 4-6 أسابيع"
+      }
     ]
   },
   {
@@ -152,15 +259,88 @@ const treatments = [
   },
   {
     value: "DENTURE",
-    label: "طقم أسنان",
+    label: "طقم أسنان جزئي متحرك",
     icon: "🦷",
-    defaultSessions: 3,
+    defaultSessions: 5,
     needsLab: true,
     basePrice: 1500000,
     sessionDetails: [
-      { session: 1, name: "الطبعة الأولية", duration: 30, fields: ["نوع الطقم", "المختبر"] },
-      { session: 2, name: "التجربة", duration: 20 },
-      { session: 3, name: "التسليم", duration: 30 }
+      {
+        session: 1,
+        name: "الطبعة الأولية",
+        duration: 30,
+        fields: ["نوع الطقم", "عدد الأسنان المفقودة", "المختبر"]
+      },
+      {
+        session: 2,
+        name: "عمل Special Tray",
+        duration: 20,
+        fields: ["نوع Special Tray", "المادة"]
+      },
+      {
+        session: 3,
+        name: "الطبعة النهائية",
+        duration: 30,
+        fields: ["نوع مادة الطبعة", "اللون"]
+      },
+      {
+        session: 4,
+        name: "التجربة الأولية",
+        duration: 25,
+        fields: ["فحص الإطباق", "اللون"]
+      },
+      {
+        session: 5,
+        name: "الاستلام والتسليم النهائي",
+        duration: 30,
+        fields: ["التعليمات", "المتابعة"]
+      }
+    ]
+  },
+  {
+    value: "COMPLETE_DENTURE",
+    label: "طقم كامل متحرك",
+    icon: "🦷",
+    defaultSessions: 6,
+    needsLab: true,
+    basePrice: 2000000,
+    sessionDetails: [
+      {
+        session: 1,
+        name: "الطبعة الأولية",
+        duration: 30,
+        fields: ["نوع الطقم (علوي/سفلي/كامل)", "المختبر"]
+      },
+      {
+        session: 2,
+        name: "عمل Special Tray",
+        duration: 25,
+        fields: ["نوع Special Tray", "المادة"]
+      },
+      {
+        session: 3,
+        name: "الطبعة النهائية وتسجيل العضة",
+        duration: 40,
+        fields: ["نوع مادة الطبعة", "Bite Registration"]
+      },
+      {
+        session: 4,
+        name: "تجربة الشمع (Wax Try-in)",
+        duration: 30,
+        fields: ["فحص الشكل", "اللون", "الإطباق"]
+      },
+      {
+        session: 5,
+        name: "التسليم الأولي",
+        duration: 35,
+        fields: ["الإطباق النهائي", "التعليمات"]
+      },
+      {
+        session: 6,
+        name: "المتابعة والتعديلات",
+        duration: 20,
+        fields: ["التعديلات المطلوبة", "ملاحظات المريض"]
+      }
     ]
   },
 ]
@@ -575,14 +755,31 @@ export function DentalChart({
                                   </Badge>
                                 )}
                               </div>
+                              {session.options && (
+                                <div className="mr-8 mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                                  <div className="text-xs font-semibold text-blue-900 mb-1">خيارات الجلسة:</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {session.options.map((option: string, optIndex: number) => (
+                                      <Badge key={optIndex} variant="secondary" className="text-xs">
+                                        {option}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                               {session.fields && (
-                                <div className="text-xs text-muted-foreground mr-8">
+                                <div className="text-xs text-muted-foreground mr-8 mt-2">
                                   الحقول المطلوبة: {session.fields.join(" • ")}
                                 </div>
                               )}
                               {session.waitPeriod && (
                                 <div className="text-xs text-orange-600 mr-8 mt-1">
                                   ⏰ فترة انتظار: {session.waitPeriod}
+                                </div>
+                              )}
+                              {session.note && (
+                                <div className="text-xs text-purple-600 mr-8 mt-1 italic">
+                                  📝 {session.note}
                                 </div>
                               )}
                             </div>
