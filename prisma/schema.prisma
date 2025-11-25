@@ -243,15 +243,15 @@ model DentistProfile {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   specialization    String?
-  licenseNumber     String? @unique
+  licenseNumber     String?        @unique
   yearsOfExperience Int?
-  bio               String? @db.Text
+  bio               String?        @db.Text
   address           String?
   city              String?
   province          IraqiProvince? // المحافظة
 
   // Elite Status
-  isElite       Boolean @default(false) // هل هو من النخبة
+  isElite       Boolean        @default(false) // هل هو من النخبة
   eliteProvince IraqiProvince? // المحافظة التي تم الترقية فيها
 
   subscriptionTier   SubscriptionTier @default(FREE)
@@ -342,7 +342,26 @@ model Clinic {
   showOnMap Boolean @default(false)
 
   workingHours Json? // {saturday: {open: "09:00", close: "17:00"}, ...}
-  bookingLink  String? @unique
+  bookingLink  String? @unique // رابط الحجز الفريد (slug)
+
+  // إعدادات الحجز الرقمي
+  onlineBookingEnabled Boolean @default(false) // تفعيل الحجز الرقمي
+  bookingSlotDuration  Int     @default(30) // مدة الموعد بالدقائق
+  maxBookingsPerDay    Int     @default(20) // الحد الأقصى للحجوزات اليومية
+  requireApproval      Boolean @default(true) // يتطلب موافقة العيادة
+  autoConfirm          Boolean @default(false) // تأكيد تلقائي
+
+  // معلومات إضافية للعرض العام
+  description String?  @db.Text // وصف العيادة
+  logo        String? // شعار العيادة
+  coverImage  String? // صورة الغلاف
+  specialties String[] // التخصصات
+  amenities   String[] // المرافق المتاحة
+  languages   String[] // اللغات المتاحة
+
+  // تقييم العيادة
+  rating       Float @default(0)
+  reviewsCount Int   @default(0)
 
   ownerId String
   owner   DentistProfile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -363,8 +382,14 @@ model Clinic {
   tasks        Task[]
   savedLabs    SavedLab[]
 
+  // علاقات جديدة
+  subscriptions  ClinicSubscription[]
+  onlineBookings OnlineBooking[]
+
   @@index([ownerId])
   @@index([bookingLink])
+  @@index([showOnMap])
+  @@index([onlineBookingEnabled])
 }
 
 model ClinicStaff {
@@ -433,6 +458,7 @@ model Patient {
   teeth          Tooth[]
   documents      PatientDocument[]
   finances       PatientFinance[]
+  onlineBookings OnlineBooking[] // الحجوزات الرقمية
 
   @@index([clinicId])
   @@index([phone])
@@ -496,6 +522,9 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  onlineBookings OnlineBooking[] // الحجوزات الرقمية المرتبطة
+
   @@index([clinicId])
   @@index([patientId])
   @@index([date])
@@ -551,7 +580,7 @@ model TreatmentPlan {
   details Json? // تفاصيل خاصة بالعلاج
 
   // Lab Order Requirements
-  needsLabOrder Boolean @default(false) // هل يحتاج طلب مختبر
+  needsLabOrder     Boolean @default(false) // هل يحتاج طلب مختبر
   labOrderRequested Boolean @default(false) // تم طلب المختبر
 
   status String @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
@@ -581,18 +610,18 @@ model TreatmentSession {
   details Json? // تفاصيل كل جلسة (طول الجذور، نوع الحشوة، إلخ)
 
   // حقول تفصيلية لعلاج العصب
-  rootCanals       Int? // عدد قنوات العصب
-  canalLength      String? // طول القناة/العصب (مثال: 21mm)
-  filesUsed        String[] // الملفات المستخدمة (مثال: ["#15", "#20", "#25"])
-  rootFillingType  String? // نوع حشو العصب (Gutta-percha, MTA, etc)
+  rootCanals        Int? // عدد قنوات العصب
+  canalLength       String? // طول القناة/العصب (مثال: 21mm)
+  filesUsed         String[] // الملفات المستخدمة (مثال: ["#15", "#20", "#25"])
+  rootFillingType   String? // نوع حشو العصب (Gutta-percha, MTA, etc)
   rootFillingLength String? // طول حشو العصب
-  finalFillingType String? // نوع الحشوة النهائية (عادية/معقدة/تركيبة)
+  finalFillingType  String? // نوع الحشوة النهائية (عادية/معقدة/تركيبة)
 
   // حقول تفصيلية للتركيبات
-  crownType        String? // نوع التاج (خزفي، معدني، زيركون)
-  crownColor       String? // لون التاج/التركيبة
-  bridgeSpan       String? // نطاق الجسر (من سن إلى سن)
-  postAndCore      Boolean @default(false) // هل يحتاج post and core
+  crownType          String? // نوع التاج (خزفي، معدني، زيركون)
+  crownColor         String? // لون التاج/التركيبة
+  bridgeSpan         String? // نطاق الجسر (من سن إلى سن)
+  postAndCore        Boolean @default(false) // هل يحتاج post and core
   needsCrownCoverage Boolean @default(false) // تغطية بالتاج
 
   // حقول تفصيلية للتقويم
@@ -602,16 +631,16 @@ model TreatmentSession {
   tighteningAmount String? // مقدار الشد
 
   // حقول تفصيلية للزراعة
-  implantBrand     String? // ماركة الزرعة
-  implantDiameter  String? // قطر الزرعة
-  implantLength    String? // طول الزرعة
-  healingPeriod    String? // فترة الالتئام
-  abutmentType     String? // نوع الدعامة
+  implantBrand    String? // ماركة الزرعة
+  implantDiameter String? // قطر الزرعة
+  implantLength   String? // طول الزرعة
+  healingPeriod   String? // فترة الالتئام
+  abutmentType    String? // نوع الدعامة
 
   // حقول عامة
-  measurements     Json? // قياسات أخرى
-  materials        String[] // المواد المستخدمة
-  stage            String? // المرحلة الحالية
+  measurements Json? // قياسات أخرى
+  materials    String[] // المواد المستخدمة
+  stage        String? // المرحلة الحالية
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -641,7 +670,7 @@ model LabOrder {
   status        LabOrderStatus @default(PENDING)
   paymentStatus PaymentStatus  @default(UNPAID)
 
-  amount Float
+  amount      Float
   platformFee Float @default(0) // نسبة المنصة
 
   // Lab details
@@ -656,7 +685,7 @@ model LabOrder {
   deliveryStaff   LabDeliveryStaff? @relation(fields: [deliveryStaffId], references: [id], onDelete: SetNull)
 
   // Tracking & Tasks
-  taskId String? // ربط بالمهمة المرتبطة
+  taskId           String? // ربط بالمهمة المرتبطة
   notificationSent Boolean @default(false) // تم إرسال الإشعار
 
   createdAt DateTime @default(now())
@@ -735,10 +764,10 @@ model PatientFinance {
   patientId String
   patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-  amount      Float
-  type        String // Payment, Charge
-  paymentMethod String @default("CASH") // CASH, CARD, INSTALLMENT
-  description String?
+  amount        Float
+  type          String // Payment, Charge
+  paymentMethod String  @default("CASH") // CASH, CARD, INSTALLMENT
+  description   String?
 
   // Link to treatment plan
   planId String? // ربط بالخطة العلاجية
@@ -1140,7 +1169,7 @@ model Course {
 
   coverImage String?
   videoUrl   String?
-  materials  Json[] @default([]) // المواد التعليمية [{title, url, type}]
+  materials  Json[]  @default([]) // المواد التعليمية [{title, url, type}]
 
   duration      Int // بالساعات
   totalSessions Int @default(1)
@@ -1218,8 +1247,8 @@ model Webinar {
   instructors Json[] @default([]) // [{id, name, title, avatar}]
 
   // التسجيل
-  maxAttendees   Int? // الحد الأقصى للحضور
-  attendeeCount  Int  @default(0)
+  maxAttendees  Int? // الحد الأقصى للحضور
+  attendeeCount Int  @default(0)
 
   scheduledDate DateTime
   duration      Int // بالدقائق
@@ -1277,8 +1306,8 @@ model ScientificResource {
   externalUrl String? // رابط خارجي إضافي
   thumbnail   String?
 
-  author     String?
-  publisher  String?
+  author        String?
+  publisher     String?
   publishedDate DateTime?
 
   tags String[] // وسوم للبحث
@@ -1308,9 +1337,9 @@ model ThreeDModel {
 
   category String // Anatomy, Procedures, Dental Conditions, etc.
 
-  sketchfabUrl  String // رابط Sketchfab
-  sketchfabId   String? // معرف النموذج في Sketchfab
-  thumbnailUrl  String?
+  sketchfabUrl String // رابط Sketchfab
+  sketchfabId  String? // معرف النموذج في Sketchfab
+  thumbnailUrl String?
 
   tags String[] // وسوم للبحث
 
@@ -1425,7 +1454,7 @@ model DentistPromotion {
   province IraqiProvince
 
   // سبب الترقية
-  reason      String? @db.Text
+  reason       String? @db.Text
   achievements String? @db.Text
 
   // المسؤول الذي قام بالترقية
@@ -1439,4 +1468,161 @@ model DentistPromotion {
   @@index([dentistId])
   @@index([province])
   @@index([promotedAt])
+}
+
+// =======================================
+// SUBSCRIPTION PLANS - نظام الباقات
+// =======================================
+
+enum PlanType {
+  FREE // مجاني
+  BASIC // أساسي
+  PROFESSIONAL // احترافي
+  ENTERPRISE // مؤسسي
+}
+
+model SubscriptionPlan {
+  id   String   @id @default(cuid())
+  name String // اسم الباقة
+  type PlanType
+
+  // الوصف والمميزات
+  description String   @db.Text
+  features    String[] // قائمة المميزات
+
+  // الأسعار
+  monthlyPrice       Float
+  yearlyPrice        Float
+  discountPercentage Float @default(0) // نسبة الخصم السنوي
+
+  // حدود الاستخدام
+  maxClinics           Int @default(1) // عدد العيادات المسموح بها
+  maxAiCreditsPerMonth Int @default(0) // عدد استخدامات التشخيص الذكي شهرياً
+
+  // المميزات
+  allowMapDisplay      Boolean @default(false) // إظهار في الخريطة التفاعلية
+  allowOnlineBooking   Boolean @default(false) // تفعيل الحجز الرقمي
+  allowAiDiagnosis     Boolean @default(false) // التشخيص الذكي
+  allowAdvancedReports Boolean @default(false) // التقارير المتقدمة
+  allowInventory       Boolean @default(false) // إدارة المخزون
+  allowMultipleStaff   Boolean @default(false) // طاقم متعدد
+
+  prioritySupport Boolean @default(false) // دعم فني مميز
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  subscriptions ClinicSubscription[]
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model ClinicSubscription {
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  planId String
+  plan   SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  // تفاصيل الاشتراك
+  startDate DateTime @default(now())
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+
+  // الاستخدام الحالي
+  aiCreditsUsed  Int @default(0)
+  aiCreditsLimit Int // ينسخ من الباقة عند الاشتراك
+
+  // الدفع
+  amount        Float
+  paymentMethod String? // طريقة الدفع
+  paymentStatus String  @default("pending") // pending, paid, failed
+  transactionId String? // معرف المعاملة
+
+  // التجديد التلقائي
+  autoRenew Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([planId])
+  @@index([endDate])
+  @@index([isActive])
+}
+
+// =======================================
+// ONLINE BOOKING - الحجز الرقمي
+// =======================================
+
+enum BookingStatus {
+  PENDING // قيد الانتظار
+  CONFIRMED // مؤكد
+  CANCELLED // ملغى
+  COMPLETED // مكتمل
+  NO_SHOW // لم يحضر
+}
+
+model OnlineBooking {
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  // معلومات المريض
+  patientName   String
+  patientPhone  String
+  patientEmail  String?
+  patientAge    Int?
+  patientGender String?
+
+  // تفاصيل الموعد
+  appointmentDate DateTime
+  appointmentTime String // "09:00", "10:30", etc.
+
+  // سبب الزيارة
+  reason       String  @db.Text
+  symptoms     String? @db.Text
+  isFirstVisit Boolean @default(true)
+
+  // الحالة
+  status BookingStatus @default(PENDING)
+
+  // ملاحظات
+  notes       String? @db.Text
+  clinicNotes String? @db.Text // ملاحظات العيادة
+
+  // التأكيد
+  confirmationCode String?   @unique // رمز التأكيد
+  confirmedAt      DateTime?
+  confirmedBy      String? // ID الموظف الذي أكد
+
+  // الإلغاء
+  cancelledAt        DateTime?
+  cancellationReason String?   @db.Text
+
+  // ربط مع المريض في النظام (إذا تم إنشاؤه)
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id])
+
+  // ربط مع الموعد في النظام (إذا تم إنشاؤه)
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+
+  // معلومات إضافية
+  source    String  @default("website") // website, mobile_app, etc.
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([appointmentDate])
+  @@index([status])
+  @@index([patientPhone])
+  @@index([createdAt])
 }
