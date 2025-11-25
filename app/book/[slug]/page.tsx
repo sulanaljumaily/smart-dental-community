@@ -514,7 +514,7 @@ export default function BookingPage() {
                   </Button>
 
                   <p className="text-xs text-gray-500 text-center">
-                    بالضغط على "تأكيد الحجز" فإنك توافق على سياسة الخصوصية وشروط الاستخدام
+                    بالضغط على &quot;تأكيد الحجز&quot; فإنك توافق على سياسة الخصوصية وشروط الاستخدام
                   </p>
                 </form>
               </CardContent>

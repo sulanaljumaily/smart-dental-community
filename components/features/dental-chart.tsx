@@ -170,6 +170,11 @@ interface ToothData {
   condition: string
   previousTreatment?: string
   notes?: string
+  conditionDetails?: {
+    canalCount?: number
+    workingLength?: number
+    fileType?: string
+  }
 }
 
 interface TreatmentPlanData {
@@ -391,6 +396,77 @@ export function DentalChart({
                     ))}
                   </div>
                 </div>
+
+                {/* Root Canal Specific Fields */}
+                {currentTooth.condition === "ROOT_CANAL_TREATED" && (
+                  <div className="space-y-4 p-4 rounded-xl bg-purple-50 border-2 border-purple-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-bold text-purple-900">تفاصيل معالجة العصب</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Canal Count */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">عدد القنوات</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={currentTooth.conditionDetails?.canalCount || ""}
+                          onChange={(e) => setCurrentTooth({
+                            ...currentTooth,
+                            conditionDetails: {
+                              ...currentTooth.conditionDetails,
+                              canalCount: Number(e.target.value)
+                            }
+                          })}
+                          className="h-12 text-base"
+                          placeholder="أدخل عدد القنوات"
+                        />
+                      </div>
+
+                      {/* Working Length */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">طول العمل (مم)</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={currentTooth.conditionDetails?.workingLength || ""}
+                          onChange={(e) => setCurrentTooth({
+                            ...currentTooth,
+                            conditionDetails: {
+                              ...currentTooth.conditionDetails,
+                              workingLength: Number(e.target.value)
+                            }
+                          })}
+                          className="h-12 text-base"
+                          placeholder="أدخل طول العمل"
+                        />
+                      </div>
+                    </div>
+
+                    {/* File Type */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">نوع الملف</Label>
+                      <select
+                        value={currentTooth.conditionDetails?.fileType || ""}
+                        onChange={(e) => setCurrentTooth({
+                          ...currentTooth,
+                          conditionDetails: {
+                            ...currentTooth.conditionDetails,
+                            fileType: e.target.value
+                          }
+                        })}
+                        className="w-full h-12 rounded-lg border-2 border-input bg-white px-4 text-base"
+                      >
+                        <option value="">اختر نوع الملف</option>
+                        <option value="Rotary">روتاري (Rotary)</option>
+                        <option value="Hand">يدوي (Hand)</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
 
                 {/* Previous Treatment */}
                 <div className="space-y-3">

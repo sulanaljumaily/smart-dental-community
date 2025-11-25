@@ -333,7 +333,7 @@ export default function ClinicSettingsPage() {
                     الظهور على الخريطة التفاعلية
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    إظهار العيادة للمرضى في قسم "العيادات القريبة"
+                    إظهار العيادة للمرضى في قسم &quot;العيادات القريبة&quot;
                   </p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-6 h-6" />
