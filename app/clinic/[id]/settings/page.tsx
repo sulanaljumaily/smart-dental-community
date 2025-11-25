@@ -18,6 +18,10 @@ import {
   AlertCircle,
   CheckCircle,
   Trash2,
+  MapPin,
+  Calendar,
+  Globe,
+  Link as LinkIcon,
 } from "lucide-react"
 
 export default function ClinicSettingsPage() {
@@ -46,7 +50,7 @@ export default function ClinicSettingsPage() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6" dir="rtl">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general">
             <Building2 className="w-4 h-4 ml-2" />
             معلومات عامة
@@ -54,6 +58,14 @@ export default function ClinicSettingsPage() {
           <TabsTrigger value="hours">
             <Clock className="w-4 h-4 ml-2" />
             ساعات العمل
+          </TabsTrigger>
+          <TabsTrigger value="booking">
+            <Calendar className="w-4 h-4 ml-2" />
+            إعدادات الحجز
+          </TabsTrigger>
+          <TabsTrigger value="map">
+            <MapPin className="w-4 h-4 ml-2" />
+            الخريطة التفاعلية
           </TabsTrigger>
           <TabsTrigger value="pricing">
             <DollarSign className="w-4 h-4 ml-2" />
@@ -230,6 +242,173 @@ export default function ClinicSettingsPage() {
                     <option value="90" selected>90 دقيقة</option>
                     <option value="120">120 دقيقة</option>
                   </select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Booking Settings */}
+        <TabsContent value="booking" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>إعدادات الحجز الرقمي</CardTitle>
+              <CardDescription>
+                تفعيل وإدارة الحجوزات الرقمية من المرضى
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-semibold">تفعيل الحجز الرقمي</h4>
+                  <p className="text-sm text-muted-foreground">
+                    السماح للمرضى بحجز المواعيد عبر الخريطة التفاعلية
+                  </p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>وقت الاستجابة المطلوب (ساعات)</Label>
+                <Input type="number" defaultValue="24" />
+                <p className="text-xs text-muted-foreground">
+                  الوقت المتوقع للرد على الحجوزات الرقمية
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>الحد الأقصى للحجوزات اليومية</Label>
+                <Input type="number" defaultValue="10" />
+                <p className="text-xs text-muted-foreground">
+                  عدد الحجوزات الرقمية المسموحة يومياً
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>رسالة تأكيد تلقائية</Label>
+                <textarea
+                  className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2"
+                  defaultValue="شكراً لحجزك موعد في عيادتنا. سنتصل بك قريباً لتأكيد الموعد."
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-semibold">التذكيرات التلقائية</h4>
+                  <p className="text-sm text-muted-foreground">
+                    إرسال تذكيرات للمرضى قبل المواعيد
+                  </p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-6 h-6" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>التذكير الأول (ساعات قبل)</Label>
+                  <Input type="number" defaultValue="24" />
+                </div>
+                <div className="space-y-2">
+                  <Label>التذكير الثاني (ساعات قبل)</Label>
+                  <Input type="number" defaultValue="2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Map Settings */}
+        <TabsContent value="map" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>الظهور على الخريطة التفاعلية</CardTitle>
+              <CardDescription>
+                تحديد موقع العيادة على الخريطة للمرضى في المنصة
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50">
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-blue-600" />
+                    الظهور على الخريطة التفاعلية
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    إظهار العيادة للمرضى في قسم "العيادات القريبة"
+                  </p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>الموقع الجغرافي</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">خط العرض (Latitude)</Label>
+                    <Input dir="ltr" defaultValue="33.3152" placeholder="33.3152" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">خط الطول (Longitude)</Label>
+                    <Input dir="ltr" defaultValue="44.3661" placeholder="44.3661" />
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <MapPin className="w-4 h-4 ml-1" />
+                  تحديد الموقع على الخريطة
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Label>نطاق الظهور (كم)</Label>
+                <Input type="number" defaultValue="10" />
+                <p className="text-xs text-muted-foreground">
+                  المسافة التي تظهر فيها العيادة للمرضى القريبين
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>رابط الحجز المباشر</Label>
+                <div className="flex gap-2">
+                  <Input
+                    dir="ltr"
+                    readOnly
+                    value="https://dental-app.com/clinic/booking/123"
+                    className="bg-gray-50"
+                  />
+                  <Button variant="outline" size="icon">
+                    <LinkIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  هذا الرابط يظهر في بطاقة العيادة على الخريطة التفاعلية
+                </p>
+              </div>
+
+              <div className="p-4 border rounded-lg bg-green-50">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-green-900">العيادة مفعلة على الخريطة</h4>
+                    <p className="text-sm text-green-700 mt-1">
+                      المرضى في نطاق 10 كم يمكنهم رؤية عيادتك وحجز موعد رقمياً
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>معلومات إضافية للعرض</Label>
+                <div className="space-y-2">
+                  {[
+                    { id: "parking", label: "مواقف سيارات متاحة" },
+                    { id: "wheelchair", label: "مهيأة لذوي الاحتياجات الخاصة" },
+                    { id: "emergency", label: "تقبل الحالات الطارئة" },
+                    { id: "insurance", label: "تقبل التأمين الصحي" },
+                  ].map(({ id, label }) => (
+                    <label key={id} className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" className="w-4 h-4" />
+                      <span className="text-sm">{label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </CardContent>

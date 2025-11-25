@@ -325,21 +325,25 @@ export default function PatientFilePageEnhanced({
                   <Stethoscope className="w-4 h-4 ml-1" />
                   الخطة العلاجية
                 </TabsTrigger>
-                <TabsTrigger value="smart" className="flex-1 min-w-fit">
-                  <Brain className="w-4 h-4 ml-1" />
-                  الخدمات الذكية
+                <TabsTrigger value="appointments" className="flex-1 min-w-fit">
+                  <Calendar className="w-4 h-4 ml-1" />
+                  الحجوزات
                 </TabsTrigger>
-                <TabsTrigger value="archive" className="flex-1 min-w-fit">
-                  <Archive className="w-4 h-4 ml-1" />
-                  الأرشيف
+                <TabsTrigger value="finance" className="flex-1 min-w-fit">
+                  <DollarSign className="w-4 h-4 ml-1" />
+                  المالية
+                </TabsTrigger>
+                <TabsTrigger value="lab" className="flex-1 min-w-fit">
+                  <FlaskConical className="w-4 h-4 ml-1" />
+                  المختبر
                 </TabsTrigger>
                 <TabsTrigger value="history" className="flex-1 min-w-fit">
                   <History className="w-4 h-4 ml-1" />
                   التاريخ الطبي
                 </TabsTrigger>
-                <TabsTrigger value="finance" className="flex-1 min-w-fit">
-                  <DollarSign className="w-4 h-4 ml-1" />
-                  المالية
+                <TabsTrigger value="archive" className="flex-1 min-w-fit">
+                  <Archive className="w-4 h-4 ml-1" />
+                  الأرشيف
                 </TabsTrigger>
               </div>
             </TabsList>
@@ -517,7 +521,69 @@ export default function PatientFilePageEnhanced({
           </div>
         </TabsContent>
 
-        {/* Other tabs remain the same... */}
+        {/* Appointments Tab */}
+        <TabsContent value="appointments" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>الحجوزات القادمة</CardTitle>
+                <Button asChild>
+                  <Link href={`/clinic/${params.id}/appointments`}>
+                    <Plus className="w-4 h-4 ml-2" />
+                    إضافة حجز جديد
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-4 rounded-lg border bg-accent/30">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="font-semibold">{patient.nextAppointment}</p>
+                      <p className="text-sm text-muted-foreground">09:00 صباحاً</p>
+                    </div>
+                  </div>
+                  <Badge variant="warning">قيد الانتظار</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">الجلسة النهائية - علاج عصب</p>
+                <div className="flex gap-2 mt-3">
+                  <Button size="sm" variant="outline">تعديل الموعد</Button>
+                  <Button size="sm">تأكيد الموعد</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>سجل الحجوزات</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="p-3 rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">2024-01-15</p>
+                    <p className="text-sm text-muted-foreground">حشو القناة المؤقت</p>
+                  </div>
+                  <Badge variant="success">مكتمل</Badge>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">2024-01-08</p>
+                    <p className="text-sm text-muted-foreground">فتح السن وتنظيف القناة</p>
+                  </div>
+                  <Badge variant="success">مكتمل</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Finance Tab */}
         <TabsContent value="finance" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
             <Card className="bento-card">
@@ -546,6 +612,125 @@ export default function PatientFilePageEnhanced({
               </CardContent>
             </Card>
           </div>
+
+          <Card className="bento-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>المعاملات المالية</CardTitle>
+                <Button asChild>
+                  <Link href={`/clinic/${params.id}/finance`}>
+                    <Plus className="w-4 h-4 ml-2" />
+                    إضافة دفعة
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-4 rounded-lg border bg-green-50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold">دفعة نقدية</p>
+                    <p className="text-sm text-muted-foreground">2024-01-15</p>
+                  </div>
+                  <p className="text-lg font-bold text-green-600">{formatCurrency(500000)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Lab Tab */}
+        <TabsContent value="lab" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>طلبات المختبر</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 rounded-lg border bg-orange-50">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <FlaskConical className="w-5 h-5 text-orange-600" />
+                    <div>
+                      <p className="font-semibold">تاج خزفي - السن 26</p>
+                      <p className="text-sm text-muted-foreground">مختبر الأسنان المتطور</p>
+                    </div>
+                  </div>
+                  <Badge variant="warning">قيد التحضير</Badge>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <p>نوع التاج: Zirconia</p>
+                  <p>اللون: A2</p>
+                  <p>تاريخ الطلب: 2024-01-10</p>
+                  <p>التسليم المتوقع: 2024-01-30</p>
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full">
+                <FlaskConical className="w-4 h-4 ml-2" />
+                طلب مختبر جديد
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* History Tab */}
+        <TabsContent value="history" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>التاريخ الطبي</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">الحساسية</h4>
+                <div className="flex flex-wrap gap-2">
+                  {patient.medicalHistory.allergies.map((allergy, idx) => (
+                    <Badge key={idx} variant="destructive">{allergy}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">الأمراض المزمنة</h4>
+                <div className="flex flex-wrap gap-2">
+                  {patient.medicalHistory.chronicDiseases.map((disease, idx) => (
+                    <Badge key={idx} variant="warning">{disease}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">الأدوية الحالية</h4>
+                <div className="flex flex-wrap gap-2">
+                  {patient.medicalHistory.medications.map((med, idx) => (
+                    <Badge key={idx} variant="secondary">{med}</Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Archive Tab */}
+        <TabsContent value="archive" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>المستندات والأشعة</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {documents.map((doc) => (
+                <div key={doc.id} className="p-4 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="font-semibold">{doc.title}</p>
+                        <p className="text-sm text-muted-foreground">{doc.date}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline">{doc.type}</Badge>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
