@@ -216,6 +216,7 @@ export function MessagingInterface({
     LAB: getFilteredContacts("LAB"),
     ADMIN: getFilteredContacts("ADMIN"),
     COMMUNITY: getFilteredContacts("COMMUNITY"),
+    SYSTEM: getFilteredContacts("SYSTEM"),
   }
 
   // التمرير الأفقي للأشخاص

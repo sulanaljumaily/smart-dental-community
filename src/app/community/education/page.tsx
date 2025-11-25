@@ -24,7 +24,6 @@ import {
   Play,
   Download,
   Eye,
-  Cube,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -252,7 +251,7 @@ export default function EducationPage() {
               <span className="hidden sm:inline">المصادر العلمية</span>
             </TabsTrigger>
             <TabsTrigger value="models3d" className="flex items-center gap-2">
-              <Cube className="w-4 h-4" />
+              <Box className="w-4 h-4" />
               <span className="hidden sm:inline">نماذج 3D</span>
             </TabsTrigger>
           </TabsList>

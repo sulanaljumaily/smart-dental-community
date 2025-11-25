@@ -482,12 +482,12 @@ export default function PatientFilePageEnhanced({
                             {session.status === "SCHEDULED" && <Clock className="w-4 h-4 text-orange-600" />}
                           </div>
                           <p className="text-xs text-muted-foreground">{session.notes}</p>
-                          {session.rootCanals && (
+                          {'rootCanals' in session && session.rootCanals && (
                             <Badge variant="outline" className="text-xs">
                               {session.rootCanals} قنوات
                             </Badge>
                           )}
-                          {session.crownType && (
+                          {'crownType' in session && session.crownType && (
                             <Badge variant="outline" className="text-xs">
                               {session.crownType}
                             </Badge>

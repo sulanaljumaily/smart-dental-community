@@ -92,7 +92,7 @@ export function SessionDetailsForm({
   const removeFile = (index: number) => {
     setFormData({
       ...formData,
-      filesUsed: formData.filesUsed.filter((_, i) => i !== index),
+      filesUsed: formData.filesUsed.filter((_item: any, i: number) => i !== index),
     })
   }
 
@@ -109,7 +109,7 @@ export function SessionDetailsForm({
   const removeMaterial = (index: number) => {
     setFormData({
       ...formData,
-      materials: formData.materials.filter((_, i) => i !== index),
+      materials: formData.materials.filter((_item: any, i: number) => i !== index),
     })
   }
 
@@ -211,7 +211,7 @@ export function SessionDetailsForm({
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
-                {formData.filesUsed.map((file, index) => (
+                {formData.filesUsed.map((file: any, index: number) => (
                   <Badge key={index} variant="secondary" className="gap-1">
                     {file}
                     <X
@@ -471,7 +471,7 @@ export function SessionDetailsForm({
             </Button>
           </div>
           <div className="flex flex-wrap gap-2 mt-2">
-            {formData.materials.map((material, index) => (
+            {formData.materials.map((material: any, index: number) => (
               <Badge key={index} variant="outline" className="gap-1">
                 {material}
                 <X
