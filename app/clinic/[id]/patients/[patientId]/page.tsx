@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DentalChart } from "@/components/features/dental-chart"
 import { SessionDetailsForm } from "@/components/features/session-details-form"
 import { LabOrderDialog } from "@/components/features/lab-order-dialog"
+import { TreatmentPlanView, TreatmentPlan as TreatmentPlanType } from "@/components/features/treatment-plan-view"
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ export default function PatientFilePageEnhanced({
   const [showSessionDialog, setShowSessionDialog] = useState(false)
   const [showLabDialog, setShowLabDialog] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
+  const [treatmentPlansData, setTreatmentPlansData] = useState<TreatmentPlanType[]>([])
 
   // بيانات تجريبية للمريض - سيتم استبدالها بـ API calls
   const patient = {
@@ -245,6 +247,56 @@ export default function PatientFilePageEnhanced({
     setShowLabDialog(true)
   }
 
+  const handleCompleteSession = (planId: string, sessionId: string) => {
+    console.log("Completing session:", planId, sessionId)
+    // Here you would call the API to complete the session
+    // await fetch(`/api/treatment-plans/${planId}/sessions/${sessionId}/complete`, {
+    //   method: "POST"
+    // })
+    alert("تم إكمال الجلسة بنجاح!")
+    // Refresh data
+  }
+
+  const handleViewPlanDetails = (planId: string) => {
+    console.log("Viewing plan details:", planId)
+  }
+
+  const handleAddPayment = (planId: string) => {
+    console.log("Adding payment for plan:", planId)
+    alert("سيتم إضافة نافذة إضافة الدفعة")
+  }
+
+  const handleCreateLabOrder = (planId: string) => {
+    const plan = treatmentPlans.find(p => p.id === planId)
+    if (plan) {
+      handleLabOrder(plan)
+    }
+  }
+
+  // تحويل البيانات للتنسيق الجديد
+  const activeTreatmentPlans: TreatmentPlanType[] = treatmentPlans.map(plan => ({
+    id: plan.id,
+    toothNumber: plan.toothNumber,
+    treatmentType: plan.type,
+    treatmentName: plan.treatment,
+    doctorName: patient.doctor,
+    price: plan.cost,
+    paid: plan.paid,
+    createdAt: "2024-01-01",
+    needsLab: plan.needsLabOrder,
+    labOrderId: plan.labOrderRequested ? "lab-123" : undefined,
+    sessions: plan.sessions.map(session => ({
+      id: session.id,
+      number: session.number,
+      name: session.notes || `الجلسة ${session.number}`,
+      date: session.date,
+      status: session.status,
+      notes: session.notes,
+      duration: 45,
+      completedAt: session.status === "COMPLETED" ? session.date : undefined,
+    })),
+  }))
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -418,6 +470,15 @@ export default function PatientFilePageEnhanced({
               <DentalChart patientId={patient.id} />
             </CardContent>
           </Card>
+
+          {/* Treatment Plans View - أسفل مخطط الأسنان */}
+          <TreatmentPlanView
+            plans={activeTreatmentPlans}
+            onCompleteSession={handleCompleteSession}
+            onViewDetails={handleViewPlanDetails}
+            onAddPayment={handleAddPayment}
+            onCreateLabOrder={handleCreateLabOrder}
+          />
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">

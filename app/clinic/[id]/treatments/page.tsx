@@ -16,19 +16,10 @@ import {
 } from "@/components/ui/dialog"
 import { Stethoscope, Plus, Edit, DollarSign, Clock, BarChart3, Users, FlaskConical } from "lucide-react"
 import Link from "next/link"
+import { getAllTreatmentTypes } from "@/lib/treatment-types"
 
-const TREATMENT_TYPES = [
-  { value: "FILLING", label: "حشوة", icon: "🦷" },
-  { value: "ROOT_CANAL", label: "علاج عصب", icon: "⚕️" },
-  { value: "EXTRACTION", label: "خلع", icon: "🔧" },
-  { value: "CROWN", label: "تاج", icon: "👑" },
-  { value: "BRIDGE", label: "جسر", icon: "🌉" },
-  { value: "IMPLANT", label: "زراعة", icon: "🦴" },
-  { value: "ORTHODONTICS", label: "تقويم", icon: "🔗" },
-  { value: "CLEANING", label: "تنظيف", icon: "✨" },
-  { value: "WHITENING", label: "تبييض", icon: "💎" },
-  { value: "DENTURE", label: "طقم أسنان", icon: "🦷" },
-]
+// استخدام النظام المركزي للعلاجات
+const TREATMENT_TYPES = getAllTreatmentTypes()
 
 export default function TreatmentsPage({ params }: { params: { id: string } }) {
   const [showDialog, setShowDialog] = useState(false)
