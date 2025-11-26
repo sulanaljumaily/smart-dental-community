@@ -381,6 +381,7 @@ model Clinic {
   labOrders    LabOrder[]
   tasks        Task[]
   savedLabs    SavedLab[]
+  salaries     StaffSalary[]
 
   // علاقات جديدة
   subscriptions  ClinicSubscription[]
@@ -657,11 +658,15 @@ model LabOrder {
   clinicId String
   clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
-  labId String
-  lab   LabProfile @relation(fields: [labId], references: [id], onDelete: Cascade)
+  labId String?
+  lab   LabProfile? @relation(fields: [labId], references: [id], onDelete: Cascade)
 
   planId String?
   plan   TreatmentPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  // معلومات المريض
+  patientId   String?
+  patientName String // اسم المريض
 
   orderType      String // نوع الطلب
   description    String? @db.Text
@@ -688,12 +693,24 @@ model LabOrder {
   taskId           String? // ربط بالمهمة المرتبطة
   notificationSent Boolean @default(false) // تم إرسال الإشعار
 
+  // Financial Integration - التكامل المالي
+  financeRecordId     String? @unique // ربط بسجل المصروفات
+  isRecordedInFinance Boolean @default(false) // هل تم تسجيله في المالية
+
+  // من قام بإنشاء/تعديل الطلب
+  createdBy     String? // ID الموظف
+  createdByName String? // اسم الموظف
+  updatedBy     String? // ID الموظف الذي عدّل
+  updatedByName String? // اسم الموظف الذي عدّل
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([clinicId])
   @@index([labId])
   @@index([status])
+  @@index([patientId])
+  @@index([financeRecordId])
 }
 
 model LabDeliveryStaff {
@@ -741,22 +758,71 @@ model SavedLab {
 // FINANCE - المالية
 // =======================================
 
+enum FinanceType {
+  REVENUE // إيراد
+  EXPENSE // مصروف
+}
+
+enum FinanceCategory {
+  // الإيرادات
+  PATIENT_PAYMENT // دفعة من مريض
+  TREATMENT_FEE // رسوم علاج
+
+  // المصروفات
+  LAB_ORDER // طلب مختبر
+  INVENTORY_PURCHASE // شراء مخزون
+  EQUIPMENT_PURCHASE // شراء معدات
+  STAFF_SALARY // راتب طاقم
+  RENT // إيجار
+  UTILITIES // مرافق (كهرباء، ماء، إلخ)
+  MAINTENANCE // صيانة
+  MARKETING // تسويق
+  OTHER_EXPENSE // مصروف آخر
+  OTHER_REVENUE // إيراد آخر
+}
+
 model Finance {
   id       String @id @default(cuid())
   clinicId String
   clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
-  type        String // Revenue, Expense
-  category    String // Treatment, Inventory, Lab, Salary, etc.
+  type        FinanceType
+  category    FinanceCategory
   amount      Float
-  description String? @db.Text
+  description String?         @db.Text
+
+  // مصدر المعاملة المالية (للتكامل ثنائي الاتجاه)
+  sourceType String? // Patient, Lab, Inventory, Asset, Staff
+  sourceId   String? // ID of the source record
+  sourceName String? // اسم المصدر للعرض
+
+  // معلومات إضافية
+  paymentMethod String? // طريقة الدفع
+  reference     String? // رقم مرجعي
+
+  // من قام بإنشاء/تعديل السجل
+  createdBy     String? // ID الموظف
+  createdByName String? // اسم الموظف
+  createdByRole String? // دور الموظف
+
+  updatedBy     String? // ID الموظف الذي عدّل
+  updatedByName String? // اسم الموظف الذي عدّل
+
+  // هل يمكن تعديل هذا السجل (حسب الصلاحيات)
+  isEditable Boolean @default(true)
+  isLocked   Boolean @default(false) // قفل السجل من التعديل
 
   date      DateTime @default(now())
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clinicId])
   @@index([type])
+  @@index([category])
   @@index([date])
+  @@index([sourceType])
+  @@index([sourceId])
+  @@index([createdBy])
 }
 
 model PatientFinance {
@@ -772,9 +838,21 @@ model PatientFinance {
   // Link to treatment plan
   planId String? // ربط بالخطة العلاجية
 
+  // Financial Integration - التكامل المالي
+  financeRecordId     String? @unique // ربط بسجل المالية العامة
+  isRecordedInFinance Boolean @default(false) // هل تم تسجيله في المالية
+
+  // من قام بإنشاء السجل
+  createdBy     String? // ID الموظف
+  createdByName String? // اسم الموظف
+  createdByRole String? // دور الموظف
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([patientId])
+  @@index([planId])
+  @@index([financeRecordId])
 }
 
 // =======================================
@@ -796,10 +874,21 @@ model InventoryItem {
 
   cost Float?
 
+  // Financial Integration - التكامل المالي
+  financeRecordId     String? @unique // ربط بسجل المصروفات عند الشراء
+  isRecordedInFinance Boolean @default(false) // هل تم تسجيله في المالية
+
+  // من قام بإضافة/تعديل المخزون
+  createdBy     String? // ID الموظف
+  createdByName String? // اسم الموظف
+  updatedBy     String? // ID الموظف الذي عدّل
+  updatedByName String? // اسم الموظف الذي عدّل
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([clinicId])
+  @@index([financeRecordId])
 }
 
 model Asset {
@@ -817,10 +906,71 @@ model Asset {
   cost   Float?
   status String @default("Active") // Active, Maintenance, Retired
 
+  // Financial Integration - التكامل المالي
+  financeRecordId     String? @unique // ربط بسجل المصروفات عند الشراء
+  isRecordedInFinance Boolean @default(false) // هل تم تسجيله في المالية
+
+  // من قام بإضافة/تعديل الأصل
+  createdBy     String? // ID الموظف
+  createdByName String? // اسم الموظف
+  updatedBy     String? // ID الموظف الذي عدّل
+  updatedByName String? // اسم الموظف الذي عدّل
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([clinicId])
+  @@index([financeRecordId])
+}
+
+// =======================================
+// STAFF SALARIES - رواتب الطاقم
+// =======================================
+
+enum SalaryStatus {
+  PENDING // قيد الانتظار
+  PAID // مدفوع
+  CANCELLED // ملغى
+}
+
+model StaffSalary {
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  staffId   String
+  staffName String
+  staffRole String
+
+  // تفاصيل الراتب
+  amount      Float
+  description String? @db.Text
+  month       Int // 1-12
+  year        Int
+
+  status SalaryStatus @default(PENDING)
+
+  // Financial Integration - التكامل المالي
+  financeRecordId     String? @unique // ربط بسجل المصروفات
+  isRecordedInFinance Boolean @default(false) // هل تم تسجيله في المالية
+
+  // من قام بتسجيل/دفع الراتب
+  createdBy     String? // ID الموظف
+  createdByName String? // اسم الموظف
+  paidBy        String? // ID الموظف الذي دفع
+  paidByName    String? // اسم الموظف الذي دفع
+
+  paymentDate DateTime?
+  notes       String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([staffId, month, year])
+  @@index([clinicId])
+  @@index([staffId])
+  @@index([status])
+  @@index([financeRecordId])
 }
 
 // =======================================
