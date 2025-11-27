@@ -20,6 +20,12 @@ import {
 
 export default function NotificationsManagementPage() {
   const [notificationText, setNotificationText] = useState("")
+  const [notificationTitle, setNotificationTitle] = useState("")
+  const [targetAudience, setTargetAudience] = useState("all")
+  const [notificationType, setNotificationType] = useState("announcement")
+  const [promoCode, setPromoCode] = useState("")
+  const [isSending, setIsSending] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
 
   // إحصائيات الإشعارات
   const stats = {
@@ -53,9 +59,47 @@ export default function NotificationsManagementPage() {
     },
   ]
 
-  const handleSendNotification = () => {
-    // TODO: إرسال الإشعار عبر API
-    console.log("Sending notification:", notificationText)
+  const handleSendNotification = async () => {
+    if (!notificationTitle || !notificationText) {
+      alert("الرجاء إدخال العنوان والنص")
+      return
+    }
+
+    setIsSending(true)
+    setSuccessMessage("")
+
+    try {
+      const response = await fetch("/api/platform-admin/notifications/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: notificationTitle,
+          message: notificationText,
+          targetAudience,
+          notificationType,
+          promoCode: promoCode || undefined,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setSuccessMessage(`تم إرسال الإشعار بنجاح إلى ${data.sentCount} مستخدم`)
+        // إعادة تعيين الحقول
+        setNotificationTitle("")
+        setNotificationText("")
+        setPromoCode("")
+      } else {
+        alert(data.error || "حدث خطأ في إرسال الإشعار")
+      }
+    } catch (error) {
+      console.error("خطأ في إرسال الإشعار:", error)
+      alert("حدث خطأ في إرسال الإشعار")
+    } finally {
+      setIsSending(false)
+    }
   }
 
   return (
@@ -121,9 +165,19 @@ export default function NotificationsManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {successMessage && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+              {successMessage}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>عنوان الإشعار</Label>
-            <Input placeholder="مثال: عرض خاص - خصم 20%" />
+            <Input
+              placeholder="مثال: عرض خاص - خصم 20%"
+              value={notificationTitle}
+              onChange={(e) => setNotificationTitle(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
@@ -139,7 +193,11 @@ export default function NotificationsManagementPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>الفئة المستهدفة</Label>
-              <select className="w-full h-10 rounded-md border border-input bg-background px-3">
+              <select
+                className="w-full h-10 rounded-md border border-input bg-background px-3"
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+              >
                 <option value="all">جميع المستخدمين</option>
                 <option value="dentists">الأطباء فقط</option>
                 <option value="vendors">الموردين فقط</option>
@@ -149,7 +207,11 @@ export default function NotificationsManagementPage() {
 
             <div className="space-y-2">
               <Label>نوع الإشعار</Label>
-              <select className="w-full h-10 rounded-md border border-input bg-background px-3">
+              <select
+                className="w-full h-10 rounded-md border border-input bg-background px-3"
+                value={notificationType}
+                onChange={(e) => setNotificationType(e.target.value)}
+              >
                 <option value="promotion">عرض ترويجي</option>
                 <option value="announcement">إعلان</option>
                 <option value="update">تحديث</option>
@@ -160,13 +222,21 @@ export default function NotificationsManagementPage() {
 
           <div className="space-y-2">
             <Label>رمز الخصم (اختياري)</Label>
-            <Input placeholder="مثال: DENTAL2024" />
+            <Input
+              placeholder="مثال: DENTAL2024"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+            />
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button onClick={handleSendNotification} className="flex-1">
+            <Button
+              onClick={handleSendNotification}
+              className="flex-1"
+              disabled={isSending}
+            >
               <Send className="w-4 h-4 ml-2" />
-              إرسال الإشعار
+              {isSending ? "جاري الإرسال..." : "إرسال الإشعار"}
             </Button>
             <Button variant="outline" className="flex-1">
               جدولة الإرسال
