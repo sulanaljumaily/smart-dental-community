@@ -136,8 +136,43 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // TODO: Send notification to clinic staff
-    // TODO: Send SMS/Email confirmation to patient
+    // إرسال إشعار لطاقم العيادة
+    try {
+      const clinicStaff = await prisma.clinicStaff.findMany({
+        where: {
+          clinicId,
+          isActive: true,
+        },
+        select: {
+          userId: true,
+        },
+      })
+
+      // إنشاء إشعارات لطاقم العيادة
+      const staffNotifications = clinicStaff.map(staff => ({
+        recipientId: staff.userId,
+        title: "حجز جديد عبر الإنترنت",
+        message: `تم استلام حجز جديد من ${patientName} بتاريخ ${appointmentDate} الساعة ${appointmentTime}`,
+        type: "BOOKING" as const,
+        read: false,
+        metadata: {
+          bookingId: booking.id,
+          clinicId,
+        },
+      }))
+
+      if (staffNotifications.length > 0) {
+        await prisma.notification.createMany({
+          data: staffNotifications,
+        }).catch(err => console.error("خطأ في إنشاء الإشعارات:", err))
+      }
+
+      // يمكن إضافة إرسال SMS/Email هنا في المستقبل
+      // TODO: إضافة خدمة SMS/Email لتأكيد الحجز للمريض
+    } catch (notificationError) {
+      console.error("خطأ في إرسال الإشعارات:", notificationError)
+      // لا نوقف العملية إذا فشل الإشعار
+    }
 
     return NextResponse.json(
       {

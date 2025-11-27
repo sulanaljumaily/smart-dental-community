@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(req: NextRequest) {
   try {
-    // TODO: استخدام session للحصول على معرّف الطبيب الحقيقي
-    const dentistId = "temp-dentist-id" // مؤقت
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: "غير مصرح" },
+        { status: 401 }
+      )
+    }
+
+    const dentistId = session.user.id
 
     // جلب عدد الإشعارات غير المقروءة
     const notificationCount = await prisma.notification.count({

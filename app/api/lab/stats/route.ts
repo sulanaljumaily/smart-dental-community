@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(req: NextRequest) {
   try {
-    // TODO: استخدام session للحصول على معرّف المختبر الحقيقي
-    const labId = "temp-lab-id" // مؤقت
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: "غير مصرح" },
+        { status: 401 }
+      )
+    }
+
+    const labId = session.user.id
 
     // جلب عدد الطلبات الجديدة
     const newOrdersCount = await prisma.labOrder.count({
