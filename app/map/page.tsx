@@ -73,8 +73,20 @@ export default function InteractiveMapPage() {
 
   const fetchClinics = async () => {
     try {
-      // TODO: Replace with actual API call
-      // For now, using mock data
+      // جلب العيادات من API
+      const response = await fetch('/api/clinics/public?onlineBookingEnabled=true')
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.clinics && data.clinics.length > 0) {
+          setClinics(data.clinics)
+          setFilteredClinics(data.clinics)
+          setLoading(false)
+          return
+        }
+      }
+
+      // في حالة فشل API أو عدم وجود عيادات، استخدم البيانات التجريبية
       const mockClinics: Clinic[] = [
         {
           id: "1",

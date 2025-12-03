@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { sendBookingConfirmationEmail } from "@/lib/email"
+import { sendBookingConfirmationSMS } from "@/lib/sms"
 
 // Generate confirmation code
 function generateConfirmationCode(): string {
@@ -167,8 +169,40 @@ export async function POST(request: NextRequest) {
         }).catch(err => console.error("خطأ في إنشاء الإشعارات:", err))
       }
 
-      // يمكن إضافة إرسال SMS/Email هنا في المستقبل
-      // TODO: إضافة خدمة SMS/Email لتأكيد الحجز للمريض
+      // إرسال تأكيد الحجز للمريض عبر Email و SMS
+      const clinicInfo = await prisma.clinic.findUnique({
+        where: { id: clinicId },
+        select: { name: true },
+      })
+
+      const bookingConfirmationData = {
+        clinicName: clinicInfo?.name || "العيادة",
+        patientName,
+        appointmentDate,
+        appointmentTime,
+        confirmationCode,
+        status: initialStatus,
+      }
+
+      // إرسال Email إذا تم توفير البريد الإلكتروني
+      if (patientEmail) {
+        sendBookingConfirmationEmail(patientEmail, bookingConfirmationData)
+          .then(success => {
+            if (success) {
+              console.log("تم إرسال بريد التأكيد للمريض")
+            }
+          })
+          .catch(err => console.error("خطأ في إرسال بريد التأكيد:", err))
+      }
+
+      // إرسال SMS
+      sendBookingConfirmationSMS(patientPhone, bookingConfirmationData)
+        .then(success => {
+          if (success) {
+            console.log("تم إرسال رسالة نصية للمريض")
+          }
+        })
+        .catch(err => console.error("خطأ في إرسال الرسالة النصية:", err))
     } catch (notificationError) {
       console.error("خطأ في إرسال الإشعارات:", notificationError)
       // لا نوقف العملية إذا فشل الإشعار

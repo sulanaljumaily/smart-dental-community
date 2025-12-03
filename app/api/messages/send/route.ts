@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { sendRealtimeMessage, sendRealtimeNotification } from "@/lib/socket-client"
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,7 +32,35 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // TODO: إرسال إشعار في الوقت الفعلي عبر Socket.io
+    // إرسال الرسالة في الوقت الفعلي عبر Socket.io
+    try {
+      await sendRealtimeMessage(receiverId, {
+        id: newMessage.id,
+        senderId: newMessage.senderId,
+        message: newMessage.message,
+        createdAt: newMessage.createdAt,
+      })
+
+      // جلب معلومات المرسل لإنشاء إشعار
+      const sender = await prisma.user.findUnique({
+        where: { id: senderId },
+        select: { name: true },
+      })
+
+      // إرسال إشعار فوري
+      await sendRealtimeNotification(receiverId, {
+        id: newMessage.id,
+        title: "رسالة جديدة",
+        message: `رسالة جديدة من ${sender?.name || "مستخدم"}`,
+        type: "MESSAGE",
+        link: `/messages?chat=${senderId}`,
+      })
+
+      console.log("✅ تم إرسال الرسالة والإشعار عبر Socket.io")
+    } catch (socketError) {
+      console.error("خطأ في إرسال الإشعار الفوري:", socketError)
+      // لا نوقف العملية إذا فشل الإشعار الفوري
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { requireAdmin } from "@/lib/auth-helpers"
 
 export async function GET(req: NextRequest) {
   try {
+    // التحقق من صلاحيات مسؤول المنصة
+    const user = await requireAdmin().catch(() => null)
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "غير مصرح: يجب أن تكون مسؤول المنصة" },
+        { status: 403 }
+      )
+    }
     // جلب مفاتيح API من قاعدة البيانات
     const apiKeys = await prisma.apiKeys.findFirst().catch(() => null)
 
@@ -39,10 +49,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // التحقق من صلاحيات مسؤول المنصة
+    const user = await requireAdmin().catch(() => null)
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "غير مصرح: يجب أن تكون مسؤول المنصة" },
+        { status: 403 }
+      )
+    }
+
     const body = await req.json()
     const { googleMapsKey, openaiKey, stripeKey, cloudinaryKey } = body
-
-    // TODO: إضافة مصادقة للتأكد من أن المستخدم هو مسؤول المنصة
 
     // تحديث أو إنشاء مفاتيح API
     const apiKeys = await prisma.apiKeys.upsert({

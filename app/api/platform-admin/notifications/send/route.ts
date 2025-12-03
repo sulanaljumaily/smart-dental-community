@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { sendPushToUsers } from "@/lib/push-notifications"
+import { sendBulkNotifications } from "@/lib/socket-client"
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,8 +58,33 @@ export async function POST(req: NextRequest) {
       return { count: 0 }
     })
 
-    // TODO: إرسال إشعارات push حقيقية هنا
-    // يمكن استخدام Firebase Cloud Messaging أو OneSignal
+    // إرسال إشعارات Push للأجهزة المحمولة
+    const userIds = recipients.map(r => r.id)
+
+    if (userIds.length > 0) {
+      // إرسال عبر Push Notifications (FCM/OneSignal)
+      sendPushToUsers(userIds, {
+        title,
+        body: message,
+        data: promoCode ? { promoCode } : undefined,
+      }).then(success => {
+        if (success) {
+          console.log(`✅ تم إرسال ${userIds.length} إشعار Push`)
+        }
+      }).catch(err => console.error("خطأ في إرسال إشعارات Push:", err))
+
+      // إرسال عبر Socket.IO للإشعارات الفورية
+      sendBulkNotifications(userIds, {
+        id: Math.random().toString(36).substring(7),
+        title,
+        message,
+        type: notificationType || "ANNOUNCEMENT",
+      }).then(success => {
+        if (success) {
+          console.log(`✅ تم إرسال ${userIds.length} إشعار فوري عبر Socket.io`)
+        }
+      }).catch(err => console.error("خطأ في إرسال إشعارات Socket.io:", err))
+    }
 
     return NextResponse.json({
       success: true,

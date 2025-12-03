@@ -147,6 +147,26 @@ io.on('connection', (socket) => {
     io.to(`clinic:${clinicId}`).emit(event, data)
   })
 
+  // Server-to-client emit (للإرسال من API routes)
+  socket.on('server:emit', ({ targetUserId, event, data }) => {
+    const recipientSocketId = activeUsers.get(targetUserId)
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit(event, data)
+    }
+  })
+
+  // Broadcast to multiple users
+  socket.on('server:broadcast', ({ userIds, event, data }) => {
+    if (Array.isArray(userIds)) {
+      userIds.forEach(userId => {
+        const socketId = activeUsers.get(userId)
+        if (socketId) {
+          io.to(socketId).emit(event, data)
+        }
+      })
+    }
+  })
+
   // Disconnect
   socket.on('disconnect', () => {
     if (socket.userId) {
