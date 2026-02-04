@@ -26,6 +26,10 @@ import {
 
 export default function PlatformSettingsPage() {
   const [showApiKeys, setShowApiKeys] = useState(false)
+  const [isSavingInfo, setIsSavingInfo] = useState(false)
+  const [isSavingKeys, setIsSavingKeys] = useState(false)
+  const [infoSuccessMessage, setInfoSuccessMessage] = useState("")
+  const [keysSuccessMessage, setKeysSuccessMessage] = useState("")
 
   // حالة تفعيل الأقسام
   const [platformFeatures, setPlatformFeatures] = useState({
@@ -98,14 +102,65 @@ export default function PlatformSettingsPage() {
     }))
   }
 
-  const handleSavePlatformInfo = () => {
-    // TODO: حفظ معلومات المنصة عبر API
-    console.log("Saving platform info:", platformInfo)
+  const handleSavePlatformInfo = async () => {
+    if (!platformInfo.name || !platformInfo.email) {
+      alert("الاسم والبريد الإلكتروني مطلوبان")
+      return
+    }
+
+    setIsSavingInfo(true)
+    setInfoSuccessMessage("")
+
+    try {
+      const response = await fetch("/api/platform-admin/settings/platform-info", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(platformInfo),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setInfoSuccessMessage("تم حفظ معلومات المنصة بنجاح")
+      } else {
+        alert(data.error || "حدث خطأ في حفظ المعلومات")
+      }
+    } catch (error) {
+      console.error("خطأ في حفظ معلومات المنصة:", error)
+      alert("حدث خطأ في حفظ المعلومات")
+    } finally {
+      setIsSavingInfo(false)
+    }
   }
 
-  const handleSaveApiKeys = () => {
-    // TODO: حفظ مفاتيح API عبر API
-    console.log("Saving API keys")
+  const handleSaveApiKeys = async () => {
+    setIsSavingKeys(true)
+    setKeysSuccessMessage("")
+
+    try {
+      const response = await fetch("/api/platform-admin/settings/api-keys", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiKeys),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setKeysSuccessMessage("تم حفظ مفاتيح API بنجاح")
+      } else {
+        alert(data.error || "حدث خطأ في حفظ المفاتيح")
+      }
+    } catch (error) {
+      console.error("خطأ في حفظ مفاتيح API:", error)
+      alert("حدث خطأ في حفظ المفاتيح")
+    } finally {
+      setIsSavingKeys(false)
+    }
   }
 
   const formatNumber = (num: number) => {
@@ -132,6 +187,11 @@ export default function PlatformSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {infoSuccessMessage && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+              {infoSuccessMessage}
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>اسم المنصة (عربي)</Label>
@@ -178,9 +238,9 @@ export default function PlatformSettingsPage() {
               />
             </div>
           </div>
-          <Button onClick={handleSavePlatformInfo}>
+          <Button onClick={handleSavePlatformInfo} disabled={isSavingInfo}>
             <Save className="w-4 h-4 ml-2" />
-            حفظ التغييرات
+            {isSavingInfo ? "جاري الحفظ..." : "حفظ التغييرات"}
           </Button>
         </CardContent>
       </Card>
@@ -385,6 +445,12 @@ export default function PlatformSettingsPage() {
             </p>
           </div>
 
+          {keysSuccessMessage && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+              {keysSuccessMessage}
+            </div>
+          )}
+
           <div className="space-y-3">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -432,9 +498,9 @@ export default function PlatformSettingsPage() {
             </div>
           </div>
 
-          <Button onClick={handleSaveApiKeys}>
+          <Button onClick={handleSaveApiKeys} disabled={isSavingKeys}>
             <Save className="w-4 h-4 ml-2" />
-            حفظ المفاتيح
+            {isSavingKeys ? "جاري الحفظ..." : "حفظ المفاتيح"}
           </Button>
         </CardContent>
       </Card>

@@ -8,6 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DentalChart } from "@/components/features/dental-chart"
+import { SessionDetailsForm } from "@/components/features/session-details-form"
+import { LabOrderDialog } from "@/components/features/lab-order-dialog"
+import { TreatmentPlanView, TreatmentPlan as TreatmentPlanType } from "@/components/features/treatment-plan-view"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   ArrowRight,
   User,
@@ -24,18 +33,23 @@ import {
   Plus,
   CheckCircle2,
   Clock,
-  FlaskConical
+  FlaskConical,
 } from "lucide-react"
 import Link from "next/link"
 
-export default function PatientFilePage({
+export default function PatientFilePageEnhanced({
   params,
 }: {
   params: { id: string; patientId: string }
 }) {
   const [activeTab, setActiveTab] = useState("overview")
+  const [selectedSession, setSelectedSession] = useState<any>(null)
+  const [showSessionDialog, setShowSessionDialog] = useState(false)
+  const [showLabDialog, setShowLabDialog] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<any>(null)
+  const [treatmentPlansData, setTreatmentPlansData] = useState<TreatmentPlanType[]>([])
 
-  // بيانات تجريبية للمريض
+  // بيانات تجريبية للمريض - سيتم استبدالها بـ API calls
   const patient = {
     id: params.patientId,
     name: "أحمد علي محمد",
@@ -71,16 +85,34 @@ export default function PatientFilePage({
       completedSessions: 2,
       cost: 750000,
       paid: 500000,
+      needsLabOrder: false,
       sessions: [
-        { number: 1, date: "2024-01-05", status: "completed", notes: "فتح السن وتنظيف القناة" },
-        { number: 2, date: "2024-01-12", status: "completed", notes: "حشو القناة المؤقت" },
-        { number: 3, date: "2024-01-25", status: "scheduled", notes: "الحشوة النهائية" },
+        {
+          id: "s1",
+          number: 1,
+          date: "2024-01-05",
+          status: "COMPLETED",
+          notes: "فتح السن وتنظيف القناة",
+          rootCanals: 3,
+          filesUsed: ["#15", "#20"],
+        },
+        {
+          id: "s2",
+          number: 2,
+          date: "2024-01-12",
+          status: "COMPLETED",
+          notes: "حشو القناة المؤقت",
+          canalLength: "21mm",
+          rootFillingType: "Gutta-percha",
+        },
+        {
+          id: "s3",
+          number: 3,
+          date: "2024-01-25",
+          status: "SCHEDULED",
+          notes: "الحشوة النهائية",
+        },
       ],
-      details: {
-        rootLength: "21mm",
-        files: ["#15", "#20", "#25"],
-        fillingType: "Gutta-percha",
-      },
     },
     {
       id: "2",
@@ -93,27 +125,41 @@ export default function PatientFilePage({
       completedSessions: 1,
       cost: 1200000,
       paid: 600000,
-      needsLab: true,
-      labOrderId: "LAB-001",
+      needsLabOrder: true,
+      labOrderRequested: false,
       sessions: [
-        { number: 1, date: "2024-01-10", status: "completed", notes: "تحضير السن وأخذ الطبعة" },
-        { number: 2, date: "2024-01-30", status: "scheduled", notes: "تركيب التاج" },
+        {
+          id: "s4",
+          number: 1,
+          date: "2024-01-10",
+          status: "COMPLETED",
+          notes: "تحضير السن وأخذ الطبعة",
+          crownType: "Zirconia",
+          crownColor: "A2",
+        },
+        {
+          id: "s5",
+          number: 2,
+          date: "2024-01-30",
+          status: "SCHEDULED",
+          notes: "تركيب التاج",
+        },
       ],
     },
+  ]
+
+  const savedLabs = [
     {
-      id: "3",
-      toothNumber: 36,
-      treatment: "حشوة تجميلية",
-      type: "FILLING",
-      status: "completed",
-      progress: 100,
-      totalSessions: 1,
-      completedSessions: 1,
-      cost: 250000,
-      paid: 250000,
-      sessions: [
-        { number: 1, date: "2023-12-20", status: "completed", notes: "حشوة مركبة - Shade A2" },
-      ],
+      id: "lab1",
+      labName: "مختبر الأسنان المتطور",
+      labPhone: "07701111111",
+      isInPlatform: true,
+    },
+    {
+      id: "lab2",
+      labName: "مختبر النجوم",
+      labPhone: "07702222222",
+      isInPlatform: false,
     },
   ]
 
@@ -136,10 +182,13 @@ export default function PatientFilePage({
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "COMPLETED":
       case "completed":
         return "success"
+      case "IN_PROGRESS":
       case "in_progress":
         return "info"
+      case "SCHEDULED":
       case "scheduled":
         return "warning"
       case "pending_lab":
@@ -151,10 +200,13 @@ export default function PatientFilePage({
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case "COMPLETED":
       case "completed":
         return "مكتمل"
+      case "IN_PROGRESS":
       case "in_progress":
         return "جاري"
+      case "SCHEDULED":
       case "scheduled":
         return "مجدول"
       case "pending_lab":
@@ -165,11 +217,85 @@ export default function PatientFilePage({
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ar-IQ', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-    }).format(amount) + " د.ع"
+    return (
+      new Intl.NumberFormat("ar-IQ", {
+        style: "decimal",
+        minimumFractionDigits: 0,
+      }).format(amount) + " د.ع"
+    )
   }
+
+  const handleSessionClick = (session: any, plan: any) => {
+    setSelectedSession({ ...session, treatmentType: plan.type, sessionNumber: session.number })
+    setSelectedPlan(plan)
+    setShowSessionDialog(true)
+  }
+
+  const handleSaveSession = async (data: any) => {
+    console.log("Saving session:", data)
+    // Here you would call the API
+    // await fetch(`/api/treatment-plans/${selectedPlan.id}/sessions/${selectedSession.id}`, {
+    //   method: "PATCH",
+    //   body: JSON.stringify(data)
+    // })
+    setShowSessionDialog(false)
+    // Refresh data
+  }
+
+  const handleLabOrder = (plan: any) => {
+    setSelectedPlan(plan)
+    setShowLabDialog(true)
+  }
+
+  const handleCompleteSession = (planId: string, sessionId: string) => {
+    console.log("Completing session:", planId, sessionId)
+    // Here you would call the API to complete the session
+    // await fetch(`/api/treatment-plans/${planId}/sessions/${sessionId}/complete`, {
+    //   method: "POST"
+    // })
+    alert("تم إكمال الجلسة بنجاح!")
+    // Refresh data
+  }
+
+  const handleViewPlanDetails = (planId: string) => {
+    console.log("Viewing plan details:", planId)
+  }
+
+  const handleAddPayment = (planId: string) => {
+    console.log("Adding payment for plan:", planId)
+    alert("سيتم إضافة نافذة إضافة الدفعة")
+  }
+
+  const handleCreateLabOrder = (planId: string) => {
+    const plan = treatmentPlans.find(p => p.id === planId)
+    if (plan) {
+      handleLabOrder(plan)
+    }
+  }
+
+  // تحويل البيانات للتنسيق الجديد
+  const activeTreatmentPlans: TreatmentPlanType[] = treatmentPlans.map(plan => ({
+    id: plan.id,
+    toothNumber: plan.toothNumber,
+    treatmentType: plan.type,
+    treatmentName: plan.treatment,
+    doctorName: patient.doctor,
+    price: plan.cost,
+    paid: plan.paid,
+    createdAt: "2024-01-01",
+    needsLab: plan.needsLabOrder,
+    labOrderId: plan.labOrderRequested ? "lab-123" : undefined,
+    sessions: plan.sessions.map(session => ({
+      id: session.id,
+      number: session.number,
+      name: session.notes || `الجلسة ${session.number}`,
+      date: session.date,
+      status: session.status,
+      notes: session.notes,
+      duration: 45,
+      completedAt: session.status === "COMPLETED" ? session.date : undefined,
+    })),
+  }))
 
   return (
     <div className="space-y-6">
@@ -207,7 +333,9 @@ export default function PatientFilePage({
                   <Phone className="w-4 h-4" />
                   <span className="text-sm">الهاتف</span>
                 </div>
-                <p className="font-semibold" dir="ltr">{patient.phone}</p>
+                <p className="font-semibold" dir="ltr">
+                  {patient.phone}
+                </p>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -235,7 +363,7 @@ export default function PatientFilePage({
         </CardContent>
       </Card>
 
-      {/* Tabs for Patient File Sections */}
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <Card className="bento-card">
           <CardContent className="p-2">
@@ -249,28 +377,32 @@ export default function PatientFilePage({
                   <Stethoscope className="w-4 h-4 ml-1" />
                   الخطة العلاجية
                 </TabsTrigger>
-                <TabsTrigger value="smart" className="flex-1 min-w-fit">
-                  <Brain className="w-4 h-4 ml-1" />
-                  الخدمات الذكية
+                <TabsTrigger value="appointments" className="flex-1 min-w-fit">
+                  <Calendar className="w-4 h-4 ml-1" />
+                  الحجوزات
                 </TabsTrigger>
-                <TabsTrigger value="archive" className="flex-1 min-w-fit">
-                  <Archive className="w-4 h-4 ml-1" />
-                  الأرشيف
+                <TabsTrigger value="finance" className="flex-1 min-w-fit">
+                  <DollarSign className="w-4 h-4 ml-1" />
+                  المالية
+                </TabsTrigger>
+                <TabsTrigger value="lab" className="flex-1 min-w-fit">
+                  <FlaskConical className="w-4 h-4 ml-1" />
+                  المختبر
                 </TabsTrigger>
                 <TabsTrigger value="history" className="flex-1 min-w-fit">
                   <History className="w-4 h-4 ml-1" />
                   التاريخ الطبي
                 </TabsTrigger>
-                <TabsTrigger value="finance" className="flex-1 min-w-fit">
-                  <DollarSign className="w-4 h-4 ml-1" />
-                  المالية
+                <TabsTrigger value="archive" className="flex-1 min-w-fit">
+                  <Archive className="w-4 h-4 ml-1" />
+                  الأرشيف
                 </TabsTrigger>
               </div>
             </TabsList>
           </CardContent>
         </Card>
 
-        {/* 1. Overview Tab */}
+        {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
             <Card className="bento-card">
@@ -304,7 +436,7 @@ export default function PatientFilePage({
               <CardTitle>ملخص الخطط العلاجية</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {treatmentPlans.map(plan => (
+              {treatmentPlans.map((plan) => (
                 <div key={plan.id} className="flex items-center gap-4 p-4 rounded-lg bg-accent/50">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
                     {plan.toothNumber}
@@ -312,9 +444,7 @@ export default function PatientFilePage({
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="font-semibold">{plan.treatment}</p>
-                      <Badge variant={getStatusColor(plan.status)}>
-                        {getStatusText(plan.status)}
-                      </Badge>
+                      <Badge variant={getStatusColor(plan.status)}>{getStatusText(plan.status)}</Badge>
                     </div>
                     <Progress value={plan.progress} className="h-2" />
                     <p className="text-xs text-muted-foreground">
@@ -327,16 +457,13 @@ export default function PatientFilePage({
           </Card>
         </TabsContent>
 
-        {/* 2. Treatment Plan Tab */}
+        {/* Treatment Plan Tab */}
         <TabsContent value="treatment" className="space-y-6">
-          {/* Dental Chart */}
           <Card className="bento-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>مخطط الأسنان التفاعلي</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  اضغط على السن لإضافة أو تعديل الخطة العلاجية
-                </p>
+                <p className="text-sm text-muted-foreground">اضغط على السن لإضافة أو تعديل الخطة العلاجية</p>
               </div>
             </CardHeader>
             <CardContent>
@@ -344,7 +471,15 @@ export default function PatientFilePage({
             </CardContent>
           </Card>
 
-          {/* Treatment Plans List */}
+          {/* Treatment Plans View - أسفل مخطط الأسنان */}
+          <TreatmentPlanView
+            plans={activeTreatmentPlans}
+            onCompleteSession={handleCompleteSession}
+            onViewDetails={handleViewPlanDetails}
+            onAddPayment={handleAddPayment}
+            onCreateLabOrder={handleCreateLabOrder}
+          />
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold">الخطط العلاجية</h3>
@@ -354,7 +489,7 @@ export default function PatientFilePage({
               </Button>
             </div>
 
-            {treatmentPlans.map(plan => (
+            {treatmentPlans.map((plan) => (
               <Card key={plan.id} className="bento-card">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -370,11 +505,14 @@ export default function PatientFilePage({
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <Badge variant={getStatusColor(plan.status)}>
-                        {getStatusText(plan.status)}
-                      </Badge>
-                      {plan.needsLab && (
-                        <Button size="sm" variant="outline" className="gap-2">
+                      <Badge variant={getStatusColor(plan.status)}>{getStatusText(plan.status)}</Badge>
+                      {plan.needsLabOrder && !plan.labOrderRequested && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-2"
+                          onClick={() => handleLabOrder(plan)}
+                        >
                           <FlaskConical className="w-4 h-4" />
                           طلب مختبر
                         </Button>
@@ -383,7 +521,6 @@ export default function PatientFilePage({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Progress Bar */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">التقدم</span>
@@ -392,13 +529,13 @@ export default function PatientFilePage({
                     <Progress value={plan.progress} className="h-3" />
                   </div>
 
-                  {/* Sessions */}
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">الجلسات</h4>
-                    {plan.sessions.map(session => (
+                    {plan.sessions.map((session) => (
                       <div
-                        key={session.number}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-accent/30"
+                        key={session.id}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-accent/30 cursor-pointer hover:bg-accent/50 transition-colors"
+                        onClick={() => handleSessionClick(session, plan)}
                       >
                         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex-shrink-0">
                           {session.number}
@@ -406,25 +543,25 @@ export default function PatientFilePage({
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-medium">{session.date}</p>
-                            {session.status === "completed" && (
-                              <CheckCircle2 className="w-4 h-4 text-green-600" />
-                            )}
-                            {session.status === "scheduled" && (
-                              <Clock className="w-4 h-4 text-orange-600" />
-                            )}
+                            {session.status === "COMPLETED" && <CheckCircle2 className="w-4 h-4 text-green-600" />}
+                            {session.status === "SCHEDULED" && <Clock className="w-4 h-4 text-orange-600" />}
                           </div>
                           <p className="text-xs text-muted-foreground">{session.notes}</p>
+                          {'rootCanals' in session && session.rootCanals && (
+                            <Badge variant="outline" className="text-xs">
+                              {session.rootCanals} قنوات
+                            </Badge>
+                          )}
+                          {'crownType' in session && session.crownType && (
+                            <Badge variant="outline" className="text-xs">
+                              {session.crownType}
+                            </Badge>
+                          )}
                         </div>
-                        {session.status === "scheduled" && (
-                          <Button size="sm" variant="outline">
-                            إكمال
-                          </Button>
-                        )}
                       </div>
                     ))}
                   </div>
 
-                  {/* Financial Info */}
                   <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
                     <div>
                       <p className="text-sm text-muted-foreground">التكلفة</p>
@@ -439,85 +576,165 @@ export default function PatientFilePage({
                       <p className="font-bold text-red-700">{formatCurrency(plan.cost - plan.paid)}</p>
                     </div>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      عرض التفاصيل
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      إضافة جلسة
-                    </Button>
-                    {plan.status === "in_progress" && (
-                      <Button size="sm" className="flex-1">
-                        إكمال كل الجلسات
-                      </Button>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </TabsContent>
 
-        {/* 3. Smart Services Tab */}
-        <TabsContent value="smart" className="space-y-6">
-          <Card className="bento-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-6 h-6 text-purple-600" />
-                الخدمات الذكية - AI
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" size="lg">
-                تشخيص ذكي بالصور
-              </Button>
-              <Button variant="outline" className="w-full" size="lg">
-                تحليل الأشعة
-              </Button>
-              <Button variant="outline" className="w-full" size="lg">
-                توقع نتائج العلاج
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* 4. Archive Tab */}
-        <TabsContent value="archive" className="space-y-6">
+        {/* Appointments Tab */}
+        <TabsContent value="appointments" className="space-y-6">
           <Card className="bento-card">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>أرشيف المستندات</CardTitle>
-                <Button>
-                  <Plus className="w-4 h-4 ml-2" />
-                  رفع مستند
+                <CardTitle>الحجوزات القادمة</CardTitle>
+                <Button asChild>
+                  <Link href={`/clinic/${params.id}/appointments`}>
+                    <Plus className="w-4 h-4 ml-2" />
+                    إضافة حجز جديد
+                  </Link>
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {documents.map(doc => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-4 rounded-lg hover:bg-accent transition-colors"
-                >
+              <div className="p-4 rounded-lg border bg-accent/30">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <FileText className="w-8 h-8 text-blue-600" />
+                    <Calendar className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="font-semibold">{doc.title}</p>
-                      <p className="text-sm text-muted-foreground">{doc.type} • {doc.date}</p>
+                      <p className="font-semibold">{patient.nextAppointment}</p>
+                      <p className="text-sm text-muted-foreground">09:00 صباحاً</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
-                    عرض
-                  </Button>
+                  <Badge variant="warning">قيد الانتظار</Badge>
                 </div>
-              ))}
+                <p className="text-sm text-muted-foreground">الجلسة النهائية - علاج عصب</p>
+                <div className="flex gap-2 mt-3">
+                  <Button size="sm" variant="outline">تعديل الموعد</Button>
+                  <Button size="sm">تأكيد الموعد</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>سجل الحجوزات</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="p-3 rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">2024-01-15</p>
+                    <p className="text-sm text-muted-foreground">حشو القناة المؤقت</p>
+                  </div>
+                  <Badge variant="success">مكتمل</Badge>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">2024-01-08</p>
+                    <p className="text-sm text-muted-foreground">فتح السن وتنظيف القناة</p>
+                  </div>
+                  <Badge variant="success">مكتمل</Badge>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* 5. Medical History Tab */}
+        {/* Finance Tab */}
+        <TabsContent value="finance" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="bento-card">
+              <CardContent className="p-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">التكلفة الإجمالية</p>
+                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(patient.totalCost)}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bento-card">
+              <CardContent className="p-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">المبلغ المدفوع</p>
+                  <p className="text-2xl font-bold text-green-600">{formatCurrency(patient.totalPaid)}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bento-card">
+              <CardContent className="p-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">المبلغ المتبقي</p>
+                  <p className="text-2xl font-bold text-red-600">{formatCurrency(patient.balance)}</p>
+                  <Badge className="w-full justify-center mt-2">الدفع نقداً فقط</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="bento-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>المعاملات المالية</CardTitle>
+                <Button asChild>
+                  <Link href={`/clinic/${params.id}/finance`}>
+                    <Plus className="w-4 h-4 ml-2" />
+                    إضافة دفعة
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-4 rounded-lg border bg-green-50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold">دفعة نقدية</p>
+                    <p className="text-sm text-muted-foreground">2024-01-15</p>
+                  </div>
+                  <p className="text-lg font-bold text-green-600">{formatCurrency(500000)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Lab Tab */}
+        <TabsContent value="lab" className="space-y-6">
+          <Card className="bento-card">
+            <CardHeader>
+              <CardTitle>طلبات المختبر</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 rounded-lg border bg-orange-50">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <FlaskConical className="w-5 h-5 text-orange-600" />
+                    <div>
+                      <p className="font-semibold">تاج خزفي - السن 26</p>
+                      <p className="text-sm text-muted-foreground">مختبر الأسنان المتطور</p>
+                    </div>
+                  </div>
+                  <Badge variant="warning">قيد التحضير</Badge>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <p>نوع التاج: Zirconia</p>
+                  <p>اللون: A2</p>
+                  <p>تاريخ الطلب: 2024-01-10</p>
+                  <p>التسليم المتوقع: 2024-01-30</p>
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full">
+                <FlaskConical className="w-4 h-4 ml-2" />
+                طلب مختبر جديد
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* History Tab */}
         <TabsContent value="history" className="space-y-6">
           <Card className="bento-card">
             <CardHeader>
@@ -527,24 +744,24 @@ export default function PatientFilePage({
               <div>
                 <h4 className="font-semibold mb-2">الحساسية</h4>
                 <div className="flex flex-wrap gap-2">
-                  {patient.medicalHistory.allergies.map((allergy, index) => (
-                    <Badge key={index} variant="destructive">{allergy}</Badge>
+                  {patient.medicalHistory.allergies.map((allergy, idx) => (
+                    <Badge key={idx} variant="destructive">{allergy}</Badge>
                   ))}
                 </div>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">الأمراض المزمنة</h4>
                 <div className="flex flex-wrap gap-2">
-                  {patient.medicalHistory.chronicDiseases.map((disease, index) => (
-                    <Badge key={index} variant="warning">{disease}</Badge>
+                  {patient.medicalHistory.chronicDiseases.map((disease, idx) => (
+                    <Badge key={idx} variant="warning">{disease}</Badge>
                   ))}
                 </div>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">الأدوية الحالية</h4>
                 <div className="flex flex-wrap gap-2">
-                  {patient.medicalHistory.medications.map((med, index) => (
-                    <Badge key={index} variant="secondary">{med}</Badge>
+                  {patient.medicalHistory.medications.map((med, idx) => (
+                    <Badge key={idx} variant="secondary">{med}</Badge>
                   ))}
                 </div>
               </div>
@@ -552,53 +769,57 @@ export default function PatientFilePage({
           </Card>
         </TabsContent>
 
-        {/* 6. Finance Tab */}
-        <TabsContent value="finance" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="bento-card">
-              <CardContent className="p-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">التكلفة الإجمالية</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {formatCurrency(patient.totalCost)}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bento-card">
-              <CardContent className="p-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">المبلغ المدفوع</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(patient.totalPaid)}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bento-card">
-              <CardContent className="p-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">المبلغ المتبقي</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {formatCurrency(patient.balance)}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
+        {/* Archive Tab */}
+        <TabsContent value="archive" className="space-y-6">
           <Card className="bento-card">
             <CardHeader>
-              <CardTitle>المعاملات المالية</CardTitle>
+              <CardTitle>المستندات والأشعة</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground py-8">
-                سيتم عرض سجل المعاملات المالية هنا
-              </p>
+            <CardContent className="space-y-3">
+              {documents.map((doc) => (
+                <div key={doc.id} className="p-4 rounded-lg border hover:bg-accent/50 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-5 h-5 text-primary" />
+                      <div>
+                        <p className="font-semibold">{doc.title}</p>
+                        <p className="text-sm text-muted-foreground">{doc.date}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline">{doc.type}</Badge>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Session Details Dialog */}
+      <Dialog open={showSessionDialog} onOpenChange={setShowSessionDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedSession && (
+            <SessionDetailsForm
+              session={selectedSession}
+              treatmentType={selectedSession.treatmentType}
+              onSave={handleSaveSession}
+              onCancel={() => setShowSessionDialog(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Lab Order Dialog */}
+      {selectedPlan && (
+        <LabOrderDialog
+          open={showLabDialog}
+          onClose={() => setShowLabDialog(false)}
+          treatmentPlanId={selectedPlan.id}
+          treatmentType={selectedPlan.type}
+          patientName={patient.name}
+          savedLabs={savedLabs}
+        />
+      )}
     </div>
   )
 }

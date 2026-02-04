@@ -21,7 +21,10 @@ import {
   User,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Phone,
+  Edit,
+  CheckCircle2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -64,6 +67,7 @@ export default function AppointmentsPage() {
       type: "فحص دوري",
       status: "confirmed",
       phone: "07701234567",
+      isDigital: false,
     },
     {
       id: "2",
@@ -74,6 +78,7 @@ export default function AppointmentsPage() {
       type: "علاج عصب",
       status: "pending",
       phone: "07709876543",
+      isDigital: false,
     },
     {
       id: "3",
@@ -84,6 +89,20 @@ export default function AppointmentsPage() {
       type: "زراعة أسنان",
       status: "confirmed",
       phone: "07801234567",
+      isDigital: false,
+    },
+    {
+      id: "6",
+      patientName: "يوسف حسين محمد",
+      doctorName: "د. محمد أحمد",
+      time: "01:00 م",
+      duration: 30,
+      type: "فحص دوري",
+      status: "digital_pending",
+      phone: "07701234567",
+      isDigital: true,
+      needsConfirmation: true,
+      digitalBookingDate: "2024-01-20",
     },
     {
       id: "4",
@@ -94,6 +113,7 @@ export default function AppointmentsPage() {
       type: "تنظيف",
       status: "completed",
       phone: "07709998877",
+      isDigital: false,
     },
     {
       id: "5",
@@ -104,6 +124,7 @@ export default function AppointmentsPage() {
       type: "تركيبات",
       status: "confirmed",
       phone: "07701112233",
+      isDigital: false,
     },
   ]
 
@@ -113,6 +134,8 @@ export default function AppointmentsPage() {
         return "success"
       case "pending":
         return "warning"
+      case "digital_pending":
+        return "info"
       case "completed":
         return "secondary"
       case "cancelled":
@@ -128,6 +151,8 @@ export default function AppointmentsPage() {
         return "مؤكد"
       case "pending":
         return "قيد الانتظار"
+      case "digital_pending":
+        return "حجز رقمي - يحتاج تأكيد"
       case "completed":
         return "مكتمل"
       case "cancelled":
@@ -337,16 +362,21 @@ export default function AppointmentsPage() {
 
         <div className="space-y-3">
           {filteredAppointments.map((appointment) => (
-            <Card key={appointment.id} className="bento-card hover:shadow-lg transition-shadow cursor-pointer">
+            <Card key={appointment.id} className={`bento-card hover:shadow-lg transition-shadow ${appointment.isDigital ? 'border-2 border-blue-400' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                     {appointment.patientName.charAt(0)}
                   </div>
                   <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between flex-wrap gap-2">
                       <div>
-                        <h4 className="font-semibold text-lg">{appointment.patientName}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold text-lg">{appointment.patientName}</h4>
+                          {appointment.isDigital && (
+                            <Badge variant="info" className="text-xs">حجز رقمي</Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{appointment.phone}</p>
                       </div>
                       <Badge variant={getStatusColor(appointment.status)}>
@@ -367,6 +397,23 @@ export default function AppointmentsPage() {
                     <Badge variant="outline" className="text-xs">
                       {appointment.type}
                     </Badge>
+
+                    {appointment.isDigital && appointment.needsConfirmation && (
+                      <div className="flex gap-2 mt-3 pt-3 border-t">
+                        <Button size="sm" variant="outline" className="flex-1">
+                          <Phone className="w-4 h-4 ml-1" />
+                          الاتصال للتأكيد
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1">
+                          <Edit className="w-4 h-4 ml-1" />
+                          تعديل الموعد
+                        </Button>
+                        <Button size="sm" className="flex-1">
+                          <CheckCircle2 className="w-4 h-4 ml-1" />
+                          تأكيد وإضافة
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

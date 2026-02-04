@@ -23,26 +23,33 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Users,
-  Stethoscope,
-  ShoppingCart,
-  Wrench,
-  Zap,
   Calendar,
   FileText,
+  User,
 } from "lucide-react"
+import { getAllExpenseCategories, getExpenseCategory } from "@/lib/expense-types"
+import { getAllTreatmentTypes } from "@/lib/treatment-types"
 
-const EXPENSE_CATEGORIES = [
-  { value: "SALARIES", label: "رواتب", icon: Users, color: "from-blue-500 to-blue-700" },
-  { value: "LAB", label: "مختبر", icon: Stethoscope, color: "from-purple-500 to-purple-700" },
-  { value: "INVENTORY", label: "مشتريات", icon: ShoppingCart, color: "from-green-500 to-green-700" },
-  { value: "MAINTENANCE", label: "صيانة", icon: Wrench, color: "from-orange-500 to-orange-700" },
-  { value: "UTILITIES", label: "خدمات", icon: Zap, color: "from-yellow-500 to-yellow-700" },
-  { value: "OTHER", label: "أخرى", icon: FileText, color: "from-gray-500 to-gray-700" },
+// استخدام النظام المركزي للمصروفات
+const EXPENSE_CATEGORIES = getAllExpenseCategories()
+// استخدام النظام المركزي للعلاجات
+const TREATMENT_TYPES = getAllTreatmentTypes()
+
+// قائمة الأطباء (يمكن جلبها من API)
+const DOCTORS = [
+  { id: "1", name: "د. محمد أحمد" },
+  { id: "2", name: "د. سارة علي" },
+  { id: "3", name: "د. أحمد حسن" },
 ]
 
 export default function FinancePage() {
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
+  const [showRevenueDialog, setShowRevenueDialog] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState("2024-01")
+  const [selectedDoctor, setSelectedDoctor] = useState("")
+  const [selectedTreatment, setSelectedTreatment] = useState("")
+  const [selectedExpenseCategory, setSelectedExpenseCategory] = useState("")
+  const [recordedBy, setRecordedBy] = useState("")
 
   // Financial Data
   const monthlyData = [
@@ -59,13 +66,14 @@ export default function FinancePage() {
   const revenueGrowth = ((currentMonth.revenue - previousMonth.revenue) / previousMonth.revenue) * 100
   const expenseGrowth = ((currentMonth.expenses - previousMonth.expenses) / previousMonth.expenses) * 100
 
-  // Revenue Breakdown
+  // Revenue Breakdown - مع إضافة اسم الطبيب
   const revenueItems = [
     {
       id: "1",
       date: "2024-01-20",
       patientName: "أحمد محمود",
       treatment: "زراعة سن",
+      doctorName: "د. محمد أحمد",
       amount: 2500000,
       paid: 1500000,
       remaining: 1000000,
@@ -77,6 +85,7 @@ export default function FinancePage() {
       date: "2024-01-19",
       patientName: "فاطمة علي",
       treatment: "تقويم أسنان - جلسة شد",
+      doctorName: "د. سارة علي",
       amount: 150000,
       paid: 150000,
       remaining: 0,
@@ -88,6 +97,7 @@ export default function FinancePage() {
       date: "2024-01-18",
       patientName: "محمد حسن",
       treatment: "علاج عصب",
+      doctorName: "د. محمد أحمد",
       amount: 750000,
       paid: 750000,
       remaining: 0,
@@ -99,6 +109,7 @@ export default function FinancePage() {
       date: "2024-01-17",
       patientName: "سارة أحمد",
       treatment: "تاج خزفي",
+      doctorName: "د. أحمد حسن",
       amount: 1200000,
       paid: 600000,
       remaining: 600000,
@@ -107,7 +118,7 @@ export default function FinancePage() {
     },
   ]
 
-  // Expenses Breakdown
+  // Expenses Breakdown - مع إضافة الحقول الجديدة
   const expenses = [
     {
       id: "1",
@@ -117,33 +128,41 @@ export default function FinancePage() {
       amount: 7400000,
       paymentMethod: "تحويل بنكي",
       status: "PAID",
+      recordedBy: "أحمد المحاسب",
+      notes: "رواتب شهرية للطاقم الطبي والإداري",
     },
     {
       id: "2",
       date: "2024-01-22",
-      category: "LAB",
+      category: "LAB_ORDER",
       description: "طلب تيجان - مختبر الابتسامة",
       amount: 2400000,
       paymentMethod: "ZainCash",
       status: "PAID",
+      recordedBy: "د. محمد أحمد",
+      notes: "3 تيجان زيركون",
     },
     {
       id: "3",
       date: "2024-01-20",
-      category: "INVENTORY",
+      category: "INVENTORY_MATERIALS",
       description: "قفازات وكمامات - شركة الطب الحديث",
       amount: 890000,
       paymentMethod: "نقدي",
       status: "PAID",
+      recordedBy: "سارة المسؤولة",
+      notes: "مستلزمات شهرية",
     },
     {
       id: "4",
       date: "2024-01-15",
-      category: "UTILITIES",
+      category: "ELECTRICITY",
       description: "فاتورة كهرباء - ديسمبر 2023",
       amount: 450000,
       paymentMethod: "نقدي",
       status: "PAID",
+      recordedBy: "أحمد المحاسب",
+      notes: "",
     },
     {
       id: "5",
@@ -153,15 +172,41 @@ export default function FinancePage() {
       amount: 350000,
       paymentMethod: "نقدي",
       status: "PAID",
+      recordedBy: "د. محمد أحمد",
+      notes: "صيانة دورية",
     },
     {
       id: "6",
       date: "2024-01-30",
-      category: "INVENTORY",
+      category: "INVENTORY_MATERIALS",
       description: "حشوات مركبة - مؤسسة الابتسامة",
       amount: 1800000,
       paymentMethod: "آجل",
       status: "PENDING",
+      recordedBy: "سارة المسؤولة",
+      notes: "دفع مؤجل لشهر",
+    },
+    {
+      id: "7",
+      date: "2024-01-08",
+      category: "INVENTORY_DEVICES",
+      description: "جهاز أشعة رقمي",
+      amount: 15000000,
+      paymentMethod: "تحويل بنكي",
+      status: "PAID",
+      recordedBy: "د. محمد أحمد",
+      notes: "استثمار في معدات جديدة",
+    },
+    {
+      id: "8",
+      date: "2024-01-05",
+      category: "RENT",
+      description: "إيجار العيادة - يناير 2024",
+      amount: 3000000,
+      paymentMethod: "تحويل بنكي",
+      status: "PAID",
+      recordedBy: "أحمد المحاسب",
+      notes: "إيجار شهري",
     },
   ]
 
@@ -404,7 +449,16 @@ export default function FinancePage() {
                     <div>
                       <h4 className="font-bold text-lg">{item.patientName}</h4>
                       <p className="text-sm text-muted-foreground">{item.treatment}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{item.date}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {item.date}
+                        </p>
+                        <p className="text-xs text-blue-600 flex items-center gap-1 font-medium">
+                          <User className="w-3 h-3" />
+                          {item.doctorName}
+                        </p>
+                      </div>
                     </div>
                     <Badge variant={item.status === "PAID" ? "success" : "warning"}>
                       {item.status === "PAID" ? "مدفوع بالكامل" : "دفع جزئي"}
@@ -459,51 +513,95 @@ export default function FinancePage() {
                     إضافة مصروف
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>إضافة مصروف جديد</DialogTitle>
                     <DialogDescription>
-                      سجل مصروف جديد للعيادة
+                      سجل مصروف جديد للعيادة مع جميع التفاصيل
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 py-4">
+                  <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto">
                     <div className="space-y-2">
-                      <Label>الفئة</Label>
-                      <select className="w-full h-10 rounded-md border border-input bg-background px-3">
-                        {EXPENSE_CATEGORIES.map(cat => {
-                          const Icon = cat.icon
-                          return (
-                            <option key={cat.value} value={cat.value}>
-                              {cat.label}
-                            </option>
-                          )
-                        })}
+                      <Label>نوع المصروف *</Label>
+                      <select
+                        className="w-full h-10 rounded-md border border-input bg-background px-3"
+                        value={selectedExpenseCategory}
+                        onChange={(e) => setSelectedExpenseCategory(e.target.value)}
+                      >
+                        <option value="">اختر نوع المصروف</option>
+                        {EXPENSE_CATEGORIES.map(cat => (
+                          <option key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </option>
+                        ))}
                       </select>
+                      {selectedExpenseCategory && (
+                        <p className="text-xs text-muted-foreground">
+                          {EXPENSE_CATEGORIES.find(c => c.value === selectedExpenseCategory)?.description}
+                        </p>
+                      )}
                     </div>
+
                     <div className="space-y-2">
-                      <Label>الوصف</Label>
+                      <Label>الوصف *</Label>
                       <Input placeholder="وصف المصروف..." />
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>المبلغ</Label>
+                        <Label>المبلغ *</Label>
                         <Input type="number" placeholder="100000" />
                       </div>
                       <div className="space-y-2">
-                        <Label>التاريخ</Label>
-                        <Input type="date" />
+                        <Label>التاريخ *</Label>
+                        <Input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
                       </div>
                     </div>
+
                     <div className="space-y-2">
-                      <Label>طريقة الدفع</Label>
+                      <Label>المسجل بواسطة *</Label>
+                      <Input
+                        placeholder="اسم الشخص الذي سجل المصروف"
+                        value={recordedBy}
+                        onChange={(e) => setRecordedBy(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>طريقة الدفع *</Label>
                       <select className="w-full h-10 rounded-md border border-input bg-background px-3">
+                        <option value="">اختر طريقة الدفع</option>
                         <option value="CASH">نقدي</option>
                         <option value="ZAINCASH">ZainCash</option>
                         <option value="BANK">تحويل بنكي</option>
                         <option value="DEFERRED">آجل</option>
                       </select>
                     </div>
-                    <Button className="w-full">حفظ المصروف</Button>
+
+                    <div className="space-y-2">
+                      <Label>ملاحظات</Label>
+                      <textarea
+                        className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2"
+                        placeholder="أي ملاحظات إضافية..."
+                      />
+                    </div>
+
+                    <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                      <h4 className="font-semibold text-sm mb-2">معلومات إضافية حسب نوع المصروف:</h4>
+                      <ul className="text-xs text-muted-foreground space-y-1">
+                        <li>• <strong>إيجار:</strong> إيجار العيادة أو المكان</li>
+                        <li>• <strong>رواتب:</strong> رواتب الموظفين والأطباء</li>
+                        <li>• <strong>كهرباء:</strong> فواتير الكهرباء</li>
+                        <li>• <strong>مخزون (أصول مادية):</strong> مواد طبية ومستلزمات</li>
+                        <li>• <strong>أجهزة (أصول مادية):</strong> أجهزة ومعدات طبية</li>
+                        <li>• <strong>طلب مختبر:</strong> طلبات من المختبرات</li>
+                      </ul>
+                    </div>
+
+                    <Button className="w-full" size="lg">
+                      <Plus className="w-4 h-4 ml-2" />
+                      حفظ المصروف
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -538,19 +636,34 @@ export default function FinancePage() {
                           </Badge>
                         </div>
 
-                        <div className="flex items-center justify-between mt-3">
-                          <div>
-                            <p className="text-2xl font-bold text-red-600">
-                              {formatCurrency(expense.amount)}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {expense.paymentMethod}
-                            </p>
+                        <div className="space-y-2 mt-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-2xl font-bold text-red-600">
+                                {formatCurrency(expense.amount)}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {expense.paymentMethod}
+                              </p>
+                            </div>
+                            {expense.status === "PENDING" && (
+                              <Button size="sm" variant="outline">
+                                تسجيل الدفع
+                              </Button>
+                            )}
                           </div>
-                          {expense.status === "PENDING" && (
-                            <Button size="sm" variant="outline">
-                              تسجيل الدفع
-                            </Button>
+
+                          {'recordedBy' in expense && expense.recordedBy && (
+                            <p className="text-xs text-blue-600 flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              المسجل: {expense.recordedBy}
+                            </p>
+                          )}
+
+                          {'notes' in expense && expense.notes && (
+                            <p className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                              {expense.notes}
+                            </p>
                           )}
                         </div>
                       </div>

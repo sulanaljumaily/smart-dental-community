@@ -426,11 +426,33 @@ export default function MessagesPage() {
   const unreadConversations = conversations.filter((c) => c.unreadCount > 0).length
   const totalUnreadMessages = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
 
-  const handleSendMessage = () => {
-    if (messageInput.trim()) {
-      // TODO: Implement send message logic
-      console.log("Sending message:", messageInput)
-      setMessageInput("")
+  const handleSendMessage = async () => {
+    if (messageInput.trim() && activeConversation) {
+      try {
+        // يجب الحصول على senderId من الجلسة
+        const senderId = "current-user-id" // يجب استبدالها بالـ session الحقيقي
+
+        const response = await fetch("/api/messages/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            senderId,
+            receiverId: activeConversation.participant.id,
+            message: messageInput,
+            conversationId: activeConversation.id,
+          }),
+        })
+
+        if (response.ok) {
+          setMessageInput("")
+          // يمكن إعادة تحميل المحادثة أو إضافة الرسالة للواجهة
+          window.location.reload()
+        } else {
+          console.error("فشل إرسال الرسالة")
+        }
+      } catch (error) {
+        console.error("خطأ في إرسال الرسالة:", error)
+      }
     }
   }
 

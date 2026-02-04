@@ -32,6 +32,9 @@ export default function StaffPage() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState<any>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
 
   const staff = [
     {
@@ -374,9 +377,30 @@ export default function StaffPage() {
               إلغاء
             </Button>
             <Button
-              onClick={() => {
-                // TODO: حفظ الصلاحيات
-                setShowPermissionsDialog(false)
+              onClick={async () => {
+                if (!selectedStaff) return
+
+                try {
+                  const response = await fetch("/api/staff/permissions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      staffId: selectedStaff.id,
+                      permissions: selectedPermissions,
+                    }),
+                  })
+
+                  if (response.ok) {
+                    setShowPermissionsDialog(false)
+                    alert("تم تحديث الصلاحيات بنجاح")
+                    window.location.reload()
+                  } else {
+                    alert("فشل تحديث الصلاحيات")
+                  }
+                } catch (error) {
+                  console.error("خطأ في تحديث الصلاحيات:", error)
+                  alert("حدث خطأ أثناء تحديث الصلاحيات")
+                }
               }}
               className="flex-1"
             >
@@ -405,6 +429,8 @@ export default function StaffPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="أدخل كلمة المرور الجديدة"
                   dir="ltr"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
                 />
                 <Button
                   type="button"
@@ -429,6 +455,8 @@ export default function StaffPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="أعد إدخال كلمة المرور"
                 dir="ltr"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
 
@@ -448,10 +476,45 @@ export default function StaffPage() {
               إلغاء
             </Button>
             <Button
-              onClick={() => {
-                // TODO: حفظ كلمة المرور
-                setShowPasswordDialog(false)
-                setShowPassword(false)
+              onClick={async () => {
+                if (!selectedStaff) return
+
+                // التحقق من تطابق كلمة المرور
+                if (newPassword !== confirmPassword) {
+                  alert("كلمات المرور غير متطابقة")
+                  return
+                }
+
+                // التحقق من قوة كلمة المرور
+                if (newPassword.length < 8) {
+                  alert("كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+                  return
+                }
+
+                try {
+                  const response = await fetch("/api/staff/password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      staffId: selectedStaff.id,
+                      newPassword,
+                    }),
+                  })
+
+                  if (response.ok) {
+                    setShowPasswordDialog(false)
+                    setShowPassword(false)
+                    setNewPassword("")
+                    setConfirmPassword("")
+                    alert("تم تحديث كلمة المرور بنجاح")
+                  } else {
+                    const data = await response.json()
+                    alert(data.error || "فشل تحديث كلمة المرور")
+                  }
+                } catch (error) {
+                  console.error("خطأ في تحديث كلمة المرور:", error)
+                  alert("حدث خطأ أثناء تحديث كلمة المرور")
+                }
               }}
               className="flex-1"
             >

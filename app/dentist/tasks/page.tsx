@@ -30,7 +30,7 @@ import Link from "next/link"
 
 type TaskStatus = "pending" | "in_progress" | "completed"
 type TaskPriority = "low" | "medium" | "high" | "urgent"
-type TaskType = "GENERAL" | "INVENTORY" | "APPOINTMENT" | "FOLLOW_UP" | "URGENT"
+type TaskType = "GENERAL" | "INVENTORY" | "APPOINTMENT" | "FOLLOW_UP" | "URGENT" | "DIGITAL_BOOKING"
 
 interface Task {
   id: string
@@ -64,6 +64,20 @@ export default function TasksManagementPage() {
 
   // بيانات تجريبية - سيتم استبدالها بـ API
   const tasks: Task[] = [
+    {
+      id: "0",
+      title: "حجز رقمي جديد - يوسف حسين محمد",
+      description: "حجز رقمي من الخريطة التفاعلية - يحتاج تأكيد والاتصال بالمريض",
+      type: "DIGITAL_BOOKING",
+      status: "pending",
+      priority: "high",
+      dueDate: "اليوم",
+      dueTime: "1:00 م",
+      clinic: { id: "1", name: "عيادة النجوم" },
+      assignedTo: { id: "4", name: "سارة (استقبال)" },
+      createdBy: { id: "system", name: "النظام" },
+      createdAt: "منذ 30 دقيقة",
+    },
     {
       id: "1",
       title: "متابعة حالة المريض خالد محمد",
@@ -242,6 +256,7 @@ export default function TasksManagementPage() {
       APPOINTMENT: "موعد",
       FOLLOW_UP: "متابعة",
       URGENT: "عاجل",
+      DIGITAL_BOOKING: "حجز رقمي",
     }
     return labels[type]
   }
@@ -253,6 +268,7 @@ export default function TasksManagementPage() {
       APPOINTMENT: "bg-purple-100 text-purple-700",
       FOLLOW_UP: "bg-green-100 text-green-700",
       URGENT: "bg-red-100 text-red-700",
+      DIGITAL_BOOKING: "bg-cyan-100 text-cyan-700",
     }
     return colors[type]
   }

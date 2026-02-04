@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { PlatformAdminNav } from "@/components/shared/platform-admin-nav"
 
 export default function PlatformAdminLayout({
@@ -7,10 +8,33 @@ export default function PlatformAdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  // TODO: استبدال بـ API لجلب العدادات الحقيقية
-  const pendingSubscriptionsCount = 8
-  const pendingVendorsCount = 5
-  const supportTicketsCount = 12
+  const [pendingSubscriptionsCount, setPendingSubscriptionsCount] = useState(0)
+  const [pendingVendorsCount, setPendingVendorsCount] = useState(0)
+  const [supportTicketsCount, setSupportTicketsCount] = useState(0)
+
+  // جلب العدادات من API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/platform-admin/stats")
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.stats) {
+            setPendingSubscriptionsCount(data.stats.pendingSubscriptionsCount || 0)
+            setPendingVendorsCount(data.stats.pendingVendorsCount || 0)
+            setSupportTicketsCount(data.stats.supportTicketsCount || 0)
+          }
+        }
+      } catch (error) {
+        console.error("خطأ في جلب الإحصائيات:", error)
+      }
+    }
+
+    fetchStats()
+    // تحديث كل 30 ثانية
+    const interval = setInterval(fetchStats, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50" dir="rtl">

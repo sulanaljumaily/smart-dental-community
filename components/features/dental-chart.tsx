@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { getAllTreatmentTypes } from "@/lib/treatment-types"
 import {
   Dialog,
   DialogContent,
@@ -43,133 +44,19 @@ const toothConditions = [
   { value: "DAMAGED", label: "تالف", color: "bg-red-700" },
 ]
 
-// قائمة العلاجات - يجب أن تتطابق مع قسم العلاجات
-const treatments = [
-  {
-    value: "FILLING",
-    label: "حشوة تجميلية",
-    icon: "🦷",
-    defaultSessions: 1,
-    needsLab: false,
-    basePrice: 150000,
-    sessionDetails: [
-      { session: 1, name: "الحشوة", duration: 30, fields: ["نوع المادة", "اللون"] }
-    ]
-  },
-  {
-    value: "ROOT_CANAL",
-    label: "علاج عصب",
-    icon: "⚕️",
-    defaultSessions: 3,
-    needsLab: false,
-    basePrice: 750000,
-    sessionDetails: [
-      { session: 1, name: "فتح وتنظيف", duration: 60, fields: ["طول الجذور", "الملفات المستخدمة"] },
-      { session: 2, name: "حشو مؤقت", duration: 45, fields: ["الملفات", "المادة الحاشية"] },
-      { session: 3, name: "الحشوة النهائية", duration: 45, fields: ["نوع الحشوة"] }
-    ]
-  },
-  {
-    value: "EXTRACTION",
-    label: "خلع",
-    icon: "🔧",
-    defaultSessions: 1,
-    needsLab: false,
-    basePrice: 100000,
-    sessionDetails: [
-      { session: 1, name: "الخلع", duration: 20, fields: ["نوع الخلع", "التخدير"] }
-    ]
-  },
-  {
-    value: "CROWN",
-    label: "تاج خزفي",
-    icon: "👑",
-    defaultSessions: 2,
-    needsLab: true,
-    basePrice: 1200000,
-    sessionDetails: [
-      { session: 1, name: "تحضير وطبعة", duration: 60, fields: ["نوع التاج", "اللون", "المختبر"] },
-      { session: 2, name: "التركيب", duration: 30, fields: ["نوع التثبيت"] }
-    ]
-  },
-  {
-    value: "BRIDGE",
-    label: "جسر ثابت",
-    icon: "🌉",
-    defaultSessions: 2,
-    needsLab: true,
-    basePrice: 1800000,
-    sessionDetails: [
-      { session: 1, name: "تحضير وطبعة", duration: 90, fields: ["عدد الوحدات", "المادة", "المختبر"] },
-      { session: 2, name: "التركيب", duration: 45, fields: ["نوع التثبيت"] }
-    ]
-  },
-  {
-    value: "IMPLANT",
-    label: "زراعة",
-    icon: "🦴",
-    defaultSessions: 3,
-    needsLab: true,
-    basePrice: 2500000,
-    sessionDetails: [
-      { session: 1, name: "زراعة الجذر", duration: 90, fields: ["نوع الزرعة", "القطر", "الطول"] },
-      { session: 2, name: "فحص الالتئام", duration: 20, waitPeriod: "3-6 أشهر" },
-      { session: 3, name: "التاج النهائي", duration: 45, fields: ["نوع التاج", "المختبر"] }
-    ]
-  },
-  {
-    value: "ORTHODONTICS",
-    label: "تقويم",
-    icon: "🔗",
-    defaultSessions: 24,
-    needsLab: false,
-    basePrice: 3500000,
-    sessionDetails: [
-      { session: 1, name: "التركيب الأولي", duration: 120, fields: ["نوع التقويم"] }
-    ]
-  },
-  {
-    value: "CLEANING",
-    label: "تنظيف",
-    icon: "✨",
-    defaultSessions: 1,
-    needsLab: false,
-    basePrice: 50000,
-    sessionDetails: [
-      { session: 1, name: "التنظيف", duration: 30, fields: ["نوع التنظيف"] }
-    ]
-  },
-  {
-    value: "WHITENING",
-    label: "تبييض",
-    icon: "💎",
-    defaultSessions: 1,
-    needsLab: false,
-    basePrice: 400000,
-    sessionDetails: [
-      { session: 1, name: "التبييض", duration: 60, fields: ["نوع التبييض", "الدرجة"] }
-    ]
-  },
-  {
-    value: "DENTURE",
-    label: "طقم أسنان",
-    icon: "🦷",
-    defaultSessions: 3,
-    needsLab: true,
-    basePrice: 1500000,
-    sessionDetails: [
-      { session: 1, name: "الطبعة الأولية", duration: 30, fields: ["نوع الطقم", "المختبر"] },
-      { session: 2, name: "التجربة", duration: 20 },
-      { session: 3, name: "التسليم", duration: 30 }
-    ]
-  },
-]
+// استخدام النظام المركزي للعلاجات
+const treatments = getAllTreatmentTypes()
 
 interface ToothData {
   number: number
   condition: string
   previousTreatment?: string
   notes?: string
+  conditionDetails?: {
+    canalCount?: number
+    workingLength?: number
+    fileType?: string
+  }
 }
 
 interface TreatmentPlanData {
@@ -392,6 +279,77 @@ export function DentalChart({
                   </div>
                 </div>
 
+                {/* Root Canal Specific Fields */}
+                {currentTooth.condition === "ROOT_CANAL_TREATED" && (
+                  <div className="space-y-4 p-4 rounded-xl bg-purple-50 border-2 border-purple-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-bold text-purple-900">تفاصيل معالجة العصب</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Canal Count */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">عدد القنوات</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={currentTooth.conditionDetails?.canalCount || ""}
+                          onChange={(e) => setCurrentTooth({
+                            ...currentTooth,
+                            conditionDetails: {
+                              ...currentTooth.conditionDetails,
+                              canalCount: Number(e.target.value)
+                            }
+                          })}
+                          className="h-12 text-base"
+                          placeholder="أدخل عدد القنوات"
+                        />
+                      </div>
+
+                      {/* Working Length */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold">طول العمل (مم)</Label>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={currentTooth.conditionDetails?.workingLength || ""}
+                          onChange={(e) => setCurrentTooth({
+                            ...currentTooth,
+                            conditionDetails: {
+                              ...currentTooth.conditionDetails,
+                              workingLength: Number(e.target.value)
+                            }
+                          })}
+                          className="h-12 text-base"
+                          placeholder="أدخل طول العمل"
+                        />
+                      </div>
+                    </div>
+
+                    {/* File Type */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">نوع الملف</Label>
+                      <select
+                        value={currentTooth.conditionDetails?.fileType || ""}
+                        onChange={(e) => setCurrentTooth({
+                          ...currentTooth,
+                          conditionDetails: {
+                            ...currentTooth.conditionDetails,
+                            fileType: e.target.value
+                          }
+                        })}
+                        className="w-full h-12 rounded-lg border-2 border-input bg-white px-4 text-base"
+                      >
+                        <option value="">اختر نوع الملف</option>
+                        <option value="Rotary">روتاري (Rotary)</option>
+                        <option value="Hand">يدوي (Hand)</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
                 {/* Previous Treatment */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">العلاج السابق (إن وجد)</Label>
@@ -499,14 +457,31 @@ export function DentalChart({
                                   </Badge>
                                 )}
                               </div>
+                              {session.options && (
+                                <div className="mr-8 mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                                  <div className="text-xs font-semibold text-blue-900 mb-1">خيارات الجلسة:</div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {session.options.map((option: string, optIndex: number) => (
+                                      <Badge key={optIndex} variant="secondary" className="text-xs">
+                                        {option}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                               {session.fields && (
-                                <div className="text-xs text-muted-foreground mr-8">
+                                <div className="text-xs text-muted-foreground mr-8 mt-2">
                                   الحقول المطلوبة: {session.fields.join(" • ")}
                                 </div>
                               )}
                               {session.waitPeriod && (
                                 <div className="text-xs text-orange-600 mr-8 mt-1">
                                   ⏰ فترة انتظار: {session.waitPeriod}
+                                </div>
+                              )}
+                              {session.note && (
+                                <div className="text-xs text-purple-600 mr-8 mt-1 italic">
+                                  📝 {session.note}
                                 </div>
                               )}
                             </div>

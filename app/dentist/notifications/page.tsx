@@ -215,19 +215,60 @@ export default function NotificationsPage() {
     n.timestamp.includes("دقائق") || n.timestamp.includes("ساعة") || n.timestamp.includes("ساعات")
   ).length
 
-  const handleMarkAsRead = (id: string) => {
-    // TODO: Implement mark as read logic
-    console.log("Mark as read:", id)
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      const response = await fetch("/api/notifications/mark-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId: id }),
+      })
+
+      if (response.ok) {
+        // تحديث الواجهة - يمكن إعادة تحميل البيانات أو تحديث الحالة المحلية
+        window.location.reload()
+      } else {
+        console.error("فشل تحديث الإشعار")
+      }
+    } catch (error) {
+      console.error("خطأ في تحديث الإشعار:", error)
+    }
   }
 
-  const handleMarkAllAsRead = () => {
-    // TODO: Implement mark all as read logic
-    console.log("Mark all as read")
+  const handleMarkAllAsRead = async () => {
+    try {
+      // يجب الحصول على userId من الجلسة - هنا يمكن استخدام useSession من next-auth
+      const userId = "current-user-id" // يجب استبدالها بالـ session الحقيقي
+
+      const response = await fetch("/api/notifications/mark-all-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (response.ok) {
+        window.location.reload()
+      } else {
+        console.error("فشل تحديث الإشعارات")
+      }
+    } catch (error) {
+      console.error("خطأ في تحديث الإشعارات:", error)
+    }
   }
 
-  const handleDelete = (id: string) => {
-    // TODO: Implement delete logic
-    console.log("Delete notification:", id)
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/notifications/delete?id=${id}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        window.location.reload()
+      } else {
+        console.error("فشل حذف الإشعار")
+      }
+    } catch (error) {
+      console.error("خطأ في حذف الإشعار:", error)
+    }
   }
 
   return (
